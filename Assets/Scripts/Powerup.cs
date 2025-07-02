@@ -8,20 +8,18 @@ public class Powerup : MonoBehaviour
     [SerializeField]
     private float _powerUpSpeed = 3f;
 
+    [Tooltip("0 - TripleShot\r\n1 - Speed\r\n2 - Shields\r\n3 - Ammo\r\n4 - Health")]
     [SerializeField]
     //0 - TripleShot
     //1 - Speed
     //2 - Shields
+    //3 - Ammo
+    //4 - Health
     private int _powerupID;
 
     [SerializeField]
     private AudioClip _clip;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
 
     // Update is called once per frame
     void Update()
@@ -58,10 +56,17 @@ public class Powerup : MonoBehaviour
                         //Debug.Log("Collected Shields");
                         player.ShieldBoostActive();
                         break;
+                    case 3:
+                        //Debug.Log("Collected Ammo");
+                        player.RefillAmmo();
+                        break;
+                    case 4:
+                        //Debug.Log("Collected Health");
+                        player.HealPlayer();
+                        break;
                     default:
                         break;
                 }
-
             }
             
             Destroy(gameObject);

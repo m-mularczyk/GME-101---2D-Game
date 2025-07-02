@@ -16,17 +16,7 @@ public class SpawnManager : MonoBehaviour
 
     private bool _isSpawning = true;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     public void StartSpawning()
     {
@@ -57,7 +47,7 @@ public class SpawnManager : MonoBehaviour
         while (_isSpawning)
         {
             float randomX = Random.Range(-9f, 9f);
-            int randomPowerupID = Random.Range(0, 3);
+            int randomPowerupID = Random.Range(0, 5);
             GameObject newPowerup = Instantiate(_powerups[randomPowerupID], new Vector3(randomX, 10, 0), Quaternion.identity);
             newPowerup.transform.SetParent(_powerupContainer.transform);
             yield return new WaitForSeconds(Random.Range(3f, 7f));

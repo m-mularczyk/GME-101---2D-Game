@@ -1,37 +1,51 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [Header("Player settings")]
     [SerializeField]
     private float _speed = 7.0f;
     [SerializeField]
+    private int _lives = 3;
+    [SerializeField]
     private float _horizontalBound = 11.5f;
+    [SerializeField]
+    private float _fireRate = 0.3f;
+    private float _canFire = -1f;
+    [SerializeField]
+    private int _maxAmmo = 15;
+    [SerializeField]
+    private int _currentAmmo;
+    [SerializeField]
+    private float _shiftSpeedModifier = 1.5f;
 
+    [Header("Laser settings")]
     [SerializeField]
     private GameObject _laserPrefab;
     [SerializeField]
     private float _laserSpawnOffset = 0.85f;
-
     [SerializeField]
-    private float _fireRate = 0.3f;
-    private float _canFire = -1f;
+    private AudioClip _laserSound;
 
-    [SerializeField]
-    private int _lives = 3;
 
+    [Header("TripleShot settings")]
     [SerializeField]
     private GameObject _tripleShotPrefab;
 
-    private SpawnManager _spawnManager;
     [SerializeField]
     private bool _isTripleShotActive = false;
+
+    [Header("SpeedBoost settings")]
     [SerializeField]
     private float _speedBoost = 2f;
 
     [SerializeField]
     private bool _isSpeedBoostActive = false;
+
+    [Header("Shield settings")]
     [SerializeField]
     private bool _isShieldActive = false;
 
@@ -39,8 +53,15 @@ public class Player : MonoBehaviour
     private GameObject _shieldVisual;
 
     [SerializeField]
+    private int _maxShieldLevel = 3;
+    [SerializeField]
+    private int _shieldLevel = 0;
+
+    [Header("Score")]
+    [SerializeField]
     private int _score;
 
+    [Header("Other")]
     [SerializeField]
     private UIManager _uiManager;
 
@@ -50,8 +71,13 @@ public class Player : MonoBehaviour
     private GameObject _rightFire;
 
     private AudioSource _audioSource;
-    [SerializeField]
-    private AudioClip _laserSound;
+
+    private SpawnManager _spawnManager;
+
+    private float _horizontalInput;
+    private float _verticalInput;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -79,6 +105,9 @@ public class Player : MonoBehaviour
             _audioSource.clip = _laserSound;
         }
 
+        _currentAmmo = _maxAmmo;
+        _uiManager.UpdateAmmoCount(_currentAmmo);
+
     }
 
     // Update is called once per frame
@@ -90,13 +119,25 @@ public class Player : MonoBehaviour
 
     void CalculateMovement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        _horizontalInput = Input.GetAxis("Horizontal");
+        _verticalInput = Input.GetAxis("Vertical");
 
-        Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
+        Vector3 direction = new Vector3(_horizontalInput, _verticalInput, 0);
 
-         transform.Translate(direction * _speed * Time.deltaTime);
-
+        if (_isSpeedBoostActive)
+        {
+            transform.Translate(direction * _speed * Time.deltaTime);
+        } else
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                transform.Translate(direction * _speed * _shiftSpeedModifier * Time.deltaTime);
+            }
+            else
+            {
+                transform.Translate(direction * _speed * Time.deltaTime);
+            }
+        }
 
 
         if (transform.position.x > _horizontalBound)
@@ -110,16 +151,6 @@ public class Player : MonoBehaviour
         
         transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, -4f, 2f), 0);
         
-        /*
-        if (transform.position.y >= _verticalBound)
-        {
-            transform.position = new Vector3(transform.position.x, _verticalBound, 0);
-        }
-        else if (transform.position.y <= -4f)
-        {
-            transform.position = new Vector3(transform.position.x, -4f, 0);
-        }
-        */
     }
 
     void ShootProcedure()
@@ -137,8 +168,12 @@ public class Player : MonoBehaviour
             if (_isTripleShotActive)
             {
                 Instantiate(_tripleShotPrefab, transform.position, Quaternion.identity);
+                _currentAmmo -= 3;
+                _uiManager.UpdateAmmoCount(_currentAmmo);
             } else {
                 Instantiate(_laserPrefab, transform.position + new Vector3(0, _laserSpawnOffset, 0), Quaternion.identity);
+                _currentAmmo--;
+                _uiManager.UpdateAmmoCount(_currentAmmo);
             }
 
             _audioSource.Play();
@@ -149,27 +184,28 @@ public class Player : MonoBehaviour
     {
         if (_isShieldActive)
         {
-            _isShieldActive = false;
-            _shieldVisual.SetActive(false);
+            ShieldDegradation();
             return;
         }
-
-        _lives--;
-        _uiManager.UpdateLives(_lives);
-
-        if (_lives == 2)
+        else
         {
-            _leftFire.SetActive(true);
-        }
-        else if (_lives == 1)
-        {
-            _rightFire.SetActive(true);
-        }
+            _lives--;
+            _uiManager.UpdateLives(_lives);
 
-        if (_lives < 1)
-        {
-            _spawnManager.OnPlayerDeath();
-            Destroy(this.gameObject);
+            if (_lives == 2)
+            {
+                _leftFire.SetActive(true);
+            }
+            else if (_lives == 1)
+            {
+                _rightFire.SetActive(true);
+            }
+
+            if (_lives < 1)
+            {
+                _spawnManager.OnPlayerDeath();
+                Destroy(this.gameObject);
+            }
         }
     }
 
@@ -189,6 +225,7 @@ public class Player : MonoBehaviour
     {
         _isSpeedBoostActive = true;
         _speed = _speed * _speedBoost;
+            
         StartCoroutine(PowerBoostCountdownRoutine());
     }
 
@@ -203,6 +240,20 @@ public class Player : MonoBehaviour
     {
         _isShieldActive = true;
         _shieldVisual.SetActive(true);
+        _shieldLevel = _maxShieldLevel;
+        _uiManager.UpdateShieldStatus(_shieldLevel -1);
+    }
+
+    // Shield Strength part
+    private void ShieldDegradation()
+    {
+        _shieldLevel--;
+        _uiManager.UpdateShieldStatus(_shieldLevel -1);
+        if (_shieldLevel -1 < 0)
+        {
+            _isShieldActive = false;
+            _shieldVisual.SetActive(false);
+        }
     }
 
     public void AddScore(int pointsToAdd)
@@ -211,13 +262,24 @@ public class Player : MonoBehaviour
         _uiManager.UpdateScore(_score);
     }
 
-    /*
-  private void OnTriggerEnter2D(Collider2D other)
-  {
-      if(other.CompareTag("Enemy Laser"))
-      {
-          Damage();
-      }
-  }
-  */
+    public void RefillAmmo()
+    {
+        _currentAmmo = _maxAmmo;
+        _uiManager.UpdateAmmoCount(_currentAmmo);
+    }
+
+    public void HealPlayer()
+    {
+        _lives++;
+        _uiManager.UpdateLives(_lives);
+
+        if (_lives == 2)
+        {
+            _rightFire.SetActive(false);
+        }
+        else if (_lives > 2) 
+        {
+            _leftFire.SetActive(false);
+        }
+    }
 }

@@ -1,8 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -22,6 +20,14 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private TMP_Text _restartText;
 
+    [SerializeField]
+    private Image _shieldStatus;
+    [SerializeField]
+    private Sprite[] _shieldRegression;
+
+    [SerializeField]
+    private TMP_Text _ammoText;
+
     private GameManager _gameManager;
 
 
@@ -35,12 +41,7 @@ public class UIManager : MonoBehaviour
         {
             Debug.LogError("Game Manager is NULL");
         }
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void UpdateScore(int updatedScore)
@@ -50,6 +51,10 @@ public class UIManager : MonoBehaviour
 
     public void UpdateLives(int lives)
     {
+        if(lives < 0 || lives > _liveSprites.Length -1)
+        { 
+            return;
+        }
         _livesImage.sprite = _liveSprites[lives];
         if(lives == 0)
         {
@@ -74,5 +79,39 @@ public class UIManager : MonoBehaviour
         StartCoroutine(GameOverUIProcedure());
         _restartText.gameObject.SetActive(true);
         _gameManager.GameOver();
+    }
+
+    // Shield Strength UI updating
+    public void UpdateShieldStatus(int shieldLevel)
+    {
+        if(shieldLevel >= 0)
+        {
+            if(shieldLevel > _shieldRegression.Length - 1)
+            {
+                _shieldStatus.sprite = _shieldRegression[_shieldRegression.Length -1];
+            } else
+            {
+                _shieldStatus.sprite = _shieldRegression[shieldLevel];
+            }
+            _shieldStatus.gameObject.SetActive(true);
+            
+        }
+        else
+        {
+            _shieldStatus.gameObject.SetActive(false);
+        }
+    }
+
+    // Ammo count UI updating
+    public void UpdateAmmoCount(int ammoCount)
+    {
+        if (ammoCount >= 0)
+        {
+            _ammoText.text = "Ammo: " + ammoCount;
+        }
+        else
+        {
+            _ammoText.text = "Ammo: " + 0;
+        }
     }
 }
