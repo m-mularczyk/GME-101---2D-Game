@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public class UIManager : MonoBehaviour
 {
@@ -28,7 +29,21 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private TMP_Text _ammoText;
 
+    [SerializeField]
+    private Image _speedBoostDurationImage;
+    private bool _isSpeedBoostActive = false;
+    private float _speedBoostDuration;
+    private float _countdownStart;
+    [SerializeField]
+    private float _countdownLeft;
+    [SerializeField]
+    private TMP_Text _waveFinishedText;
+    [SerializeField]
+    private TMP_Text _newWaveCountdownText;
+
+
     private GameManager _gameManager;
+    private SpawnManager _spawnManager;
 
 
     // Start is called before the first frame update
@@ -36,12 +51,26 @@ public class UIManager : MonoBehaviour
     {
         _scoreText.text = "Score: " + 0;
         _gameOverText.gameObject.SetActive(false);
+
         _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         if( _gameManager == null)
         {
             Debug.LogError("Game Manager is NULL");
         }
 
+        _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+        if(_spawnManager == null)
+        {
+            Debug.LogError("Spawn Manager is NULL");
+        }
+    }
+
+    private void Update()
+    {
+        if (_isSpeedBoostActive)
+        {
+            SpeedBoostIndicatorCountdown();
+        }
     }
 
     public void UpdateScore(int updatedScore)
@@ -113,5 +142,53 @@ public class UIManager : MonoBehaviour
         {
             _ammoText.text = "Ammo: " + 0;
         }
+    }
+
+    // SpeedBoost duration indicator
+    public void SpeedBoostIndicatorStart(float boostDuration)
+    {
+        _speedBoostDurationImage.gameObject.SetActive(true);
+        _isSpeedBoostActive = true;
+        _speedBoostDuration = boostDuration;
+        _countdownStart = Time.time;
+    }
+
+    // SpeedBoost duration indicator
+    private void SpeedBoostIndicatorCountdown()
+    {
+        _countdownLeft = _countdownStart + _speedBoostDuration - Time.time;
+        _speedBoostDurationImage.fillAmount = _countdownLeft / _speedBoostDuration;
+        if (_countdownLeft <= 0)
+        {
+            _countdownLeft = 0;
+            _isSpeedBoostActive = false;
+            _speedBoostDurationImage.gameObject.SetActive(false);
+        }
+    }
+
+    public void WaveFinished()
+    {
+        StartCoroutine(WaveFinishedSequence());
+        
+    }
+
+    IEnumerator WaveFinishedSequence()
+    {
+        _waveFinishedText.gameObject.SetActive(true);
+        _waveFinishedText.text = "Wave " + _spawnManager.GetCurrentWaveNumber() + " finished";
+        yield return new WaitForSeconds(1f);
+
+        _newWaveCountdownText.gameObject.SetActive(true);
+        _newWaveCountdownText.text = "New wave in: 3";
+        yield return new WaitForSeconds(1f);
+        _newWaveCountdownText.text = "New wave in: 2";
+        yield return new WaitForSeconds(1f);
+        _newWaveCountdownText.text = "New wave in: 1";
+        yield return new WaitForSeconds(1f);
+
+        _waveFinishedText.gameObject.SetActive(false);
+        _newWaveCountdownText.gameObject.SetActive(false);
+
+        _spawnManager.StartNewWave();
     }
 }

@@ -6,23 +6,36 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _enemySpeed = 4f;
-
-    private Player _player;
-
-    private Animator _anim;
-    private BoxCollider2D _boxCollider2D;
-
-    private AudioSource _audioSource;
-
     [SerializeField]
     private GameObject _enemyLaserPrefab;
+    [SerializeField]
+    private GameObject _enemyShieldVisual;
+    
+    [SerializeField]
+    private bool _isEnemyEvasive = false;
+    [SerializeField]
+    private bool _isEnemyAggressive = false;
+    [SerializeField]
+    private bool _isEnemySmart = false;
+    
+    [SerializeField]
+    private bool _isEnemyProtected = false;
+
+    private Player _player;
+    private Animator _anim;
+    private BoxCollider2D _boxCollider2D;
+    private AudioSource _audioSource;
+    private SpawnManager _spawnManager;
 
     private bool _isEnemyAlive = true;
 
     private float _fireRate = 3f;
     private float _canFire = -1f;
 
-    private Vector3 _laserOffser = Vector3.down;
+    [SerializeField]
+    private Vector3 _laserOffset = Vector3.down;
+
+    private bool _isEvading = false;
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +64,16 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        //StartCoroutine(EnemyShotCooldown());
+        _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+        if(_spawnManager == null)
+        {
+            Debug.LogError("Spawn Manager is NULL");
+        }
+
+        if (_isEnemyProtected)
+        {
+            _enemyShieldVisual.SetActive(true);
+        }
     }
 
     // Update is called once per frame
@@ -63,13 +85,15 @@ public class Enemy : MonoBehaviour
         {
             EnemyFiring();
         }
+
+        EvadeLaser();
     }
 
     private void EnemyFiring()
     {
         _fireRate = Random.Range(3f, 7f);
         _canFire = Time.time + _fireRate;
-        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffser, Quaternion.identity);
+        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffset, Quaternion.identity);
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
         for (int i = 0; i < lasers.Length; i++)
@@ -103,7 +127,7 @@ public class Enemy : MonoBehaviour
 
                     _player.AddScore(10);
 
-                    OnEnemyDeath();
+                    OnEnemyHit();
                 }
             }
 
@@ -114,35 +138,72 @@ public class Enemy : MonoBehaviour
                 player.Damage();
             }
 
-            OnEnemyDeath();
+            OnEnemyHit();
         }
 
     }
 
-    private void OnEnemyDeath()
+    public void OnEnemyHit()
     {
-        _anim.SetTrigger("OnEnemyDeath");
-        _boxCollider2D.enabled = false;
-        _isEnemyAlive = false;
-        _audioSource.Play();
-        Destroy(this.gameObject, 2.8f);
-    }
-
-    /*
-    private void EnemyShot()
-    {
-        Instantiate(_enemyLaserPrefab, transform.position + new Vector3(0, -1, 0), Quaternion.identity);
-    }
-
-    IEnumerator EnemyShotCooldown()
-    {
-        yield return new WaitForSeconds(1f);
-        while (_isEnemyAlive) 
+        if (!_isEnemyAlive)
         {
-            EnemyShot();
-            yield return new WaitForSeconds(Random.Range(3f, 7f));
+            return;
         }
+
+        if (_isEnemyProtected)
+        {
+            _isEnemyProtected = false;
+            _enemyShieldVisual.SetActive(false);
+            return;
+        }
+
+        _isEnemyAlive = false;
+        _boxCollider2D.enabled = false;
+
+        _anim.SetTrigger("OnEnemyDeath");
+        _audioSource.Play();
+
+        _spawnManager.RemoveEnemy();
+
+        Destroy(this.gameObject, 2.8f);
         
     }
-    */
+
+    public void SetEnemyConfiguration(bool evasive,bool aggressive, bool smart, bool shield)
+    {
+        
+        _isEnemyEvasive = evasive;
+        _isEnemyAggressive = aggressive;
+        _isEnemySmart = smart;
+        _isEnemyProtected = shield;
+    }
+
+
+    // Laser evasive movement
+    public void LaserDetected()
+    {
+        _isEvading = true;
+    }
+
+    public void EvadeLaser()
+    {
+        if (_isEvading && _isEnemyAlive)
+        {
+            {
+                transform.Translate(Vector3.left * 7 * Time.deltaTime);
+            }
+                StartCoroutine(EvadingCountdown());
+        }
+    }
+
+    IEnumerator EvadingCountdown()
+    {
+        yield return new WaitForSeconds(0.2f);
+        _isEvading = false;
+    }
+
+    public bool IsEnemyAlive()
+    {
+        return _isEnemyAlive;
+    }
 }

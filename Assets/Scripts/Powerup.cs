@@ -7,20 +7,33 @@ public class Powerup : MonoBehaviour
 
     [SerializeField]
     private float _powerUpSpeed = 3f;
+    [SerializeField]
+    private float _magnetPower = 12f;
 
-    [Tooltip("0 - TripleShot\r\n1 - Speed\r\n2 - Shields\r\n3 - Ammo\r\n4 - Health")]
+
+    private bool _movingTowardsPlayer = false;
+    private GameObject _playerObject;
+
+    [Tooltip("0 - TripleShot\r\n1 - Speed\r\n2 - Shields\r\n3 - Ammo\r\n4 - Health\r\n5 - Shotgun\r\n6 - Homing Missle\r\n7 - Bomb (negative)")]
     [SerializeField]
     //0 - TripleShot
     //1 - Speed
     //2 - Shields
     //3 - Ammo
     //4 - Health
+    //5 - Shotgun
+    //6 - Homing Missile
+    //7 - Bomb (negative)
     private int _powerupID;
 
     [SerializeField]
     private AudioClip _clip;
 
 
+    private void Start()
+    {
+        _playerObject = GameObject.Find("Player");
+    }
     // Update is called once per frame
     void Update()
     {
@@ -29,6 +42,11 @@ public class Powerup : MonoBehaviour
         if(transform.position.y < -9)
         {
             Destroy(gameObject);
+        }
+
+        if(_movingTowardsPlayer)
+        {
+            MoveToPlayer();
         }
     }
 
@@ -49,7 +67,7 @@ public class Powerup : MonoBehaviour
                         player.TripleShotActive();
                         break;
                     case 1:
-                        //Debug.Log("Collected PowerBoost");
+                        //Debug.Log("Collected SpeedBoost");
                         player.SpeedBoostActive();
                         break;
                     case 2:
@@ -64,6 +82,15 @@ public class Powerup : MonoBehaviour
                         //Debug.Log("Collected Health");
                         player.HealPlayer();
                         break;
+                    case 5:
+                        player.SpecialWeaponActive();
+                        break;
+                    case 6:
+                        player.HomingMissileActive();
+                        break;
+                    case 7:
+                        player.Damage();
+                        break;
                     default:
                         break;
                 }
@@ -72,4 +99,16 @@ public class Powerup : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void MoveToPlayer()
+    {
+        var step = _magnetPower * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, _playerObject.transform.position, step);
+    }
+
+    public void StartMovingTowardsPlayer()
+    {
+        _movingTowardsPlayer = true;
+    }
+
 }

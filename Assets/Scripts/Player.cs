@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -38,9 +36,19 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool _isTripleShotActive = false;
 
+    [Header("Homing Missile settings")]
+    [SerializeField]
+    private GameObject _homingMissilePrefab;
+    [SerializeField]
+    private float _homingMissileOffset = 1.1f;
+    [SerializeField]
+    private bool _isHomingMissileActive = false;
+
     [Header("SpeedBoost settings")]
     [SerializeField]
     private float _speedBoost = 2f;
+    [SerializeField]
+    private float _speedBoostDuration = 5f;
 
     [SerializeField]
     private bool _isSpeedBoostActive = false;
@@ -56,6 +64,12 @@ public class Player : MonoBehaviour
     private int _maxShieldLevel = 3;
     [SerializeField]
     private int _shieldLevel = 0;
+
+    [Header("Special Weapon settings")]
+    [SerializeField]
+    private GameObject _specialWeaponPrefab;
+    [SerializeField]
+    private bool _isShotgunActive = false;
 
     [Header("Score")]
     [SerializeField]
@@ -73,9 +87,11 @@ public class Player : MonoBehaviour
     private AudioSource _audioSource;
 
     private SpawnManager _spawnManager;
-
+    private GameObject _mainCamera;
+    
     private float _horizontalInput;
     private float _verticalInput;
+
 
 
 
@@ -105,6 +121,12 @@ public class Player : MonoBehaviour
             _audioSource.clip = _laserSound;
         }
 
+        _mainCamera = GameObject.Find("Main Camera");
+        if (_mainCamera == null)
+        {
+            Debug.LogError("Main Camera is NULL");
+        }
+
         _currentAmmo = _maxAmmo;
         _uiManager.UpdateAmmoCount(_currentAmmo);
 
@@ -115,6 +137,20 @@ public class Player : MonoBehaviour
     {
         CalculateMovement();
         ShootProcedure();
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Powerup[] powerups = GameObject.FindObjectsOfType<Powerup>();
+            if (powerups.Length > 0)
+            {
+                foreach (Powerup powerup in powerups)
+                {
+                    powerup.StartMovingTowardsPlayer();
+                }
+            }
+
+            Debug.Log("Powerup magnets enabled");
+        }
     }
 
     void CalculateMovement()
@@ -157,21 +193,37 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && Time.time > _canFire)
         {
+
+            _canFire = Time.time + _fireRate;
             /*
             // Simple laser shooting
             _canFire = Time.time + _fireRate;
             Instantiate(_laserPrefab, transform.position + new Vector3(0, _laserSpawnOffset, 0), Quaternion.identity);
             */
 
-            //Laser and Triple Shot shooting
-            _canFire = Time.time + _fireRate;
-            if (_isTripleShotActive)
+            if (_isHomingMissileActive)
+            {
+                //Debug.Log("Homing missile shooting");
+                Instantiate(_homingMissilePrefab, transform.position + Vector3.up * _homingMissileOffset, Quaternion.identity);
+                _isHomingMissileActive = false;
+            }
+            // Special shot
+            else if (_isShotgunActive)
+            {
+                //Debug.Log("Special shot shooting");
+                Instantiate(_specialWeaponPrefab, transform.position + Vector3.up * _laserSpawnOffset, Quaternion.identity);
+            }
+            // Triple shot
+            else if (_isTripleShotActive)
             {
                 Instantiate(_tripleShotPrefab, transform.position, Quaternion.identity);
                 _currentAmmo -= 3;
                 _uiManager.UpdateAmmoCount(_currentAmmo);
-            } else {
-                Instantiate(_laserPrefab, transform.position + new Vector3(0, _laserSpawnOffset, 0), Quaternion.identity);
+            }
+            // Standard shot
+            else
+            {
+                Instantiate(_laserPrefab, transform.position + Vector3.up * _laserSpawnOffset, Quaternion.identity);
                 _currentAmmo--;
                 _uiManager.UpdateAmmoCount(_currentAmmo);
             }
@@ -191,6 +243,7 @@ public class Player : MonoBehaviour
         {
             _lives--;
             _uiManager.UpdateLives(_lives);
+            _mainCamera.GetComponent<CameraShake>().CameraShaking();
 
             if (_lives == 2)
             {
@@ -225,13 +278,15 @@ public class Player : MonoBehaviour
     {
         _isSpeedBoostActive = true;
         _speed = _speed * _speedBoost;
-            
-        StartCoroutine(PowerBoostCountdownRoutine());
+
+        _uiManager.SpeedBoostIndicatorStart(_speedBoostDuration);
+
+        StartCoroutine(SpeedBoostCountdownRoutine());
     }
 
-    IEnumerator PowerBoostCountdownRoutine()
+    IEnumerator SpeedBoostCountdownRoutine()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(5f);
         _speed = _speed / _speedBoost;
         _isSpeedBoostActive = false;
     }
@@ -270,6 +325,10 @@ public class Player : MonoBehaviour
 
     public void HealPlayer()
     {
+        if(_lives == 3)
+        {
+            return;
+        }
         _lives++;
         _uiManager.UpdateLives(_lives);
 
@@ -282,4 +341,22 @@ public class Player : MonoBehaviour
             _leftFire.SetActive(false);
         }
     }
+
+    public void SpecialWeaponActive()
+    {
+        _isShotgunActive = true;
+        StartCoroutine(SpecialWeaponCountdown());
+    }
+
+    IEnumerator SpecialWeaponCountdown()
+    {
+        yield return new WaitForSeconds(5);
+        _isShotgunActive = false;
+    }
+
+    public void HomingMissileActive()
+    {
+        _isHomingMissileActive = true;
+    }
+
 }

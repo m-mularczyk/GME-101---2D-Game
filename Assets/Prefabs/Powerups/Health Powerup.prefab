@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7976010203355669742}
   - component: {fileID: 26416688276663844}
+  - component: {fileID: 2280083420932377434}
   - component: {fileID: 7303224964399373496}
   - component: {fileID: 6608998087663426466}
-  - component: {fileID: 2280083420932377434}
   - component: {fileID: 2177532930991561159}
   m_Layer: 0
   m_Name: Health Powerup
@@ -88,6 +88,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2280083420932377434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629638776278261060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3023cdda366f0934c9d2bdba3ccea195, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _powerUpSpeed: 3
+  _magnetPower: 12
+  _powerupID: 4
+  _clip: {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
 --- !u!58 &7303224964399373496
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -125,21 +141,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &2280083420932377434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 629638776278261060}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3023cdda366f0934c9d2bdba3ccea195, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _powerUpSpeed: 3
-  _powerupID: 4
-  _clip: {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
 --- !u!95 &2177532930991561159
 Animator:
   serializedVersion: 5
