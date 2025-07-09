@@ -149,7 +149,7 @@ public class Player : MonoBehaviour
                 }
             }
 
-            Debug.Log("Powerup magnets enabled");
+            //Debug.Log("Powerup magnets enabled");
         }
     }
 

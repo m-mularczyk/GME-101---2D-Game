@@ -35,5 +35,13 @@ public class EnemyRadar : MonoBehaviour
                 }
             }
         }
+        else if (other.CompareTag("Player"))
+        {
+            _enemy.RamPlayer(other.GetComponent<Player>());
+        }
+        else if (other.CompareTag("Powerup"))
+        {
+            _enemy.AttackPowerup();
+        }
     }
 }

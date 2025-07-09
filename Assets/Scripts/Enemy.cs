@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Enemy : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class Enemy : MonoBehaviour
     private BoxCollider2D _boxCollider2D;
     private AudioSource _audioSource;
     private SpawnManager _spawnManager;
+    private GameManager _gameManager;
 
     private bool _isEnemyAlive = true;
 
@@ -36,6 +38,10 @@ public class Enemy : MonoBehaviour
     private Vector3 _laserOffset = Vector3.down;
 
     private bool _isEvading = false;
+    private bool _isRamming = false;
+
+    [SerializeField]
+    private float _rammingSpeedMultiplier = 1.6f;
 
     // Start is called before the first frame update
     void Start()
@@ -70,6 +76,8 @@ public class Enemy : MonoBehaviour
             Debug.LogError("Spawn Manager is NULL");
         }
 
+        _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+
         if (_isEnemyProtected)
         {
             _enemyShieldVisual.SetActive(true);
@@ -93,7 +101,32 @@ public class Enemy : MonoBehaviour
     {
         _fireRate = Random.Range(3f, 7f);
         _canFire = Time.time + _fireRate;
+        if (_isEnemySmart && transform.position.y < _player.transform.position.y)
+        {
+            // Reverse shooting
+            EnemyShotBackwards();
+        }
+        else
+        {
+            // Standard shooting
+            EnemyShot();
+        }
+    }
+
+    private void EnemyShot()
+    {
         GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffset, Quaternion.identity);
+        Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
+
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            lasers[i].AssignEnemyLaser();
+        }
+    }
+
+    private void EnemyShotBackwards()
+    {
+        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffset, Quaternion.Euler(new Vector3(0, 0, 180)));
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
         for (int i = 0; i < lasers.Length; i++)
@@ -104,9 +137,18 @@ public class Enemy : MonoBehaviour
 
     private void CalculateMovement()
     {
-        transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
+        if (_isRamming && _isEnemyAggressive)
+        {
+            transform.Translate(Vector3.down * _enemySpeed * _rammingSpeedMultiplier * Time.deltaTime);
+            StartCoroutine(RammingCountdown());
 
-        if (transform.position.y < -6 && _isEnemyAlive)
+        } else
+        {
+            transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
+        }
+
+
+        if (transform.position.y < -6 && _isEnemyAlive && !_gameManager.IsGameOver())
         {
             float randomX = Random.Range(-9f, 9f);
             float randomY = Random.Range(10f, 15f);
@@ -205,5 +247,22 @@ public class Enemy : MonoBehaviour
     public bool IsEnemyAlive()
     {
         return _isEnemyAlive;
+    }
+
+    public void RamPlayer(Player player)
+    {
+        _isRamming = true;
+    }
+
+    IEnumerator RammingCountdown()
+    {
+        yield return new WaitForSeconds(0.75f);
+        _isRamming = false;
+    }
+
+    public void AttackPowerup()
+    {
+        Debug.Log("Enemy attacking a powerup!");
+        EnemyShot();
     }
 }
