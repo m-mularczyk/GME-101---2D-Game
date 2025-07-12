@@ -818,11 +818,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemyPrefab: {fileID: 1458460782181400761, guid: d5258918df138b344b9f2427573897d1, type: 3}
   _enemyContainer: {fileID: 849470698}
-  _enemyBossPrefab: {fileID: 1458460782181400761, guid: ac07ea38aa0fd504ea985dd50f1278fe, type: 3}
-  _isEvasiveProbability: 0.2
+  _enemyBossPrefab: {fileID: 1458460782181400761, guid: a867c4c947fce7e4d8f2f4c02c94a4be, type: 3}
+  _isEvasiveProbability: 0.8
   _isAggressiveProbability: 0.2
-  _hasShieldProbability: 0.3
+  _hasShieldProbability: 0.2
   _isSmartProbability: 0.2
+  _horizontalMogementProbability: 0.3
   _powerups:
   - {fileID: 9057076708853260519, guid: 850b0c8d2f3fbc84bb58212dfed8a940, type: 3}
   - {fileID: 5014086052002236058, guid: c857d18f455c84441a4f42c0229597bc, type: 3}
@@ -836,15 +837,19 @@ MonoBehaviour:
   _frequentSpawnProbability: 0.65
   _frequentPowerups:
   - {fileID: 629638776278261060, guid: f3f29a1796704f540b19daecf2000f0a, type: 3}
+  - {fileID: 629638776278261060, guid: 4632f5bac0144ee48a53553d1f87378e, type: 3}
+  - {fileID: 629638776278261060, guid: 4632f5bac0144ee48a53553d1f87378e, type: 3}
+  - {fileID: 629638776278261060, guid: 4632f5bac0144ee48a53553d1f87378e, type: 3}
   _powerupContainer: {fileID: 1299835980}
   _isSpawningEnemies: 0
   _isSpawningPowerups: 0
   _currentWave: 1
-  _enemiesPerLevel: 4
+  _enemiesPerLevel: 6
   _enemiesMultiplier: 1.3
   _maxEnemiesOnScreen: 8
   _totalEnemiesSpawned: 0
   _remainingEnemies: 0
+  _waveNumberWithBoss: 1
   _uiManager: {fileID: 2069309082}
   _gameManager: {fileID: 902423448}
 --- !u!4 &535523965
@@ -3510,6 +3515,143 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &2054118489
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2054118490}
+  - component: {fileID: 2054118491}
+  - component: {fileID: 2054118492}
+  m_Layer: 5
+  m_Name: Game_Finished_text
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2054118490
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054118489}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2069309081}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 2.1100277e-10, y: 21.726}
+  m_SizeDelta: {x: 738.3478, y: 129.5779}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2054118491
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054118489}
+  m_CullTransparentMesh: 1
+--- !u!114 &2054118492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054118489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 'Congratulations!
+
+    You WON. Your score is XXX'
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 45
+  m_fontSizeBase: 45
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &2067508427
 GameObject:
   m_ObjectHideFlags: 0
@@ -3708,6 +3850,7 @@ RectTransform:
   - {fileID: 1424006093}
   - {fileID: 1862002400}
   - {fileID: 1725290965}
+  - {fileID: 2054118490}
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3736,6 +3879,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 482c8e4c0346b704aa5f1760c3c989d5, type: 3}
   - {fileID: 21300000, guid: 9fe6f40efddf0b64fb68a3382b14a4db, type: 3}
   _gameOverText: {fileID: 440727934}
+  _gameFinishedText: {fileID: 2054118492}
   _restartText: {fileID: 1140279362}
   _shieldStatus: {fileID: 758662359}
   _shieldRegression:

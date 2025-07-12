@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
 public class HomingMissile : MonoBehaviour
@@ -10,43 +11,61 @@ public class HomingMissile : MonoBehaviour
     private float _missileSpeed = 12f;
 
     private Enemy[] _enemies;
-    private List<Enemy> _potentialTargets;
     private Enemy _closestEnemy;
-
+    
     private bool _targetAcquired = false;
+    private Player _player;
 
     // Start is called before the first frame update
     void Start()
     {
+        _player = GameObject.Find("Player").GetComponent<Player>();
+
         _enemies = GameObject.FindObjectsOfType<Enemy>();
 
-        if (_enemies.Length > 0)
+        List<Enemy> aliveEnemies = new List<Enemy>();
+        foreach (Enemy enemy in _enemies)
         {
-            _closestEnemy = _enemies[0];
-            for (int i = 0; i < _enemies.Length; i++)
+            if (enemy.IsEnemyAlive())
             {
-                if (Vector3.Distance(transform.position, _enemies[i].transform.position) < Vector3.Distance(transform.position, _closestEnemy.transform.position))
+                aliveEnemies.Add(enemy);
+            }
+        }
+
+        if (aliveEnemies.Count > 0)
+        {
+            _closestEnemy = aliveEnemies[0];
+            for (int i = 0; i < aliveEnemies.Count; i++)
+            {
+                if (Vector3.Distance(transform.position, aliveEnemies[i].transform.position) < Vector3.Distance(transform.position, _closestEnemy.transform.position))
                 {
-                    _closestEnemy = _enemies[i];
+                    _closestEnemy = aliveEnemies[i];
                 }
             }
-             _targetAcquired = true;
-  
+            _targetAcquired = true;
         }
+
+        StartCoroutine(HomingMissileRemoval());
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        StartCoroutine(HomingMissileRemoval());
-
-        if (_targetAcquired && _closestEnemy.IsEnemyAlive())
+        if (_closestEnemy == null || !_closestEnemy.IsEnemyAlive())
         {
-            float step = _missileSpeed * Time.deltaTime;
-            transform.position = Vector3.MoveTowards(transform.position, _closestEnemy.transform.position, step);
+            _targetAcquired = false;
+            _closestEnemy = null;
+        }
 
-            Vector2 direction = _closestEnemy.transform.position - transform.position;
-            transform.up = direction;
+        if (_targetAcquired && _closestEnemy != null)
+        {
+  
+                float step = _missileSpeed * Time.deltaTime;
+                transform.position = Vector3.MoveTowards(transform.position, _closestEnemy.transform.position, step);
+
+                Vector2 direction = _closestEnemy.transform.position - transform.position;
+                transform.up = direction;
         }
         else
         {
@@ -72,6 +91,10 @@ public class HomingMissile : MonoBehaviour
                 Enemy enemy = other.GetComponent<Enemy>();
                 if (enemy != null)
                 {
+                    if (!enemy.IsBoss() && !enemy.IsProtected())
+                    {
+                        _player.AddScore(10);
+                    }
                     enemy.OnEnemyHit();
                     Destroy(gameObject);
                 }

@@ -31,6 +31,7 @@ public class Enemy : MonoBehaviour
     private AudioSource _audioSource;
     private SpawnManager _spawnManager;
     private GameManager _gameManager;
+    private UIManager _uiManager;
 
     private bool _isEnemyAlive = true;
     private float _fireRate = 3f;
@@ -47,6 +48,19 @@ public class Enemy : MonoBehaviour
 
     [SerializeField]
     private float _rammingSpeedMultiplier = 1.6f;
+
+    [SerializeField]
+    private bool _isBoss = false;
+    [SerializeField]
+    private float _bossSpeed = 1f;
+    [SerializeField]
+    private int _bossLives = 5;
+    [SerializeField]
+    private int _bossScore = 100;
+    private Vector3 _bossDirection = Vector3.down;
+
+    private bool _hasEvadeStarted = false;
+    private Vector3 _evadeDirection = Vector3.left;
 
     // Start is called before the first frame update
     void Start()
@@ -87,35 +101,59 @@ public class Enemy : MonoBehaviour
         {
             _enemyShieldVisual.SetActive(true);
         }
+
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        if( _uiManager == null)
+        {
+            Debug.Log("UI Manager is NULL");
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        CalculateMovement();
 
-        if(Time.time > _canFire && _isEnemyAlive)
+        if (!_isBoss)
         {
-            EnemyFiring();
-        }
+            CalculateMovement();
 
-        EvadeLaser();
+            if (Time.time > _canFire && _isEnemyAlive)
+            {
+                EnemyFiring();
+            }
+
+            EvadeLaser();
+        }
+        else
+        {
+            transform.Translate(_bossDirection * _bossSpeed * Time.deltaTime);
+
+            if (transform.position.y <= 2f)
+            {
+                _bossSpeed = 0f;
+            }
+        }
+        
     }
 
     private void EnemyFiring()
     {
         _fireRate = Random.Range(3f, 7f);
         _canFire = Time.time + _fireRate;
-        if (_isEnemySmart && transform.position.y < _player.transform.position.y)
+        if (_player != null)
         {
-            // Reverse shooting
-            EnemyShotBackwards();
+            if (_isEnemySmart && transform.position.y < _player.transform.position.y && !_gameManager.IsGameOver())
+            {
+                // Reverse shooting
+                EnemyShotBackwards();
+            }
+            else
+            {
+                // Standard shooting
+                EnemyShot();
+            }
         }
-        else
-        {
-            // Standard shooting
-            EnemyShot();
-        }
+        
     }
 
     private void EnemyShot()
@@ -181,6 +219,11 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!_isEnemyAlive)
+        {
+            return;
+        }
+
         if (other.CompareTag("Laser")){
 
             Laser laser = other.GetComponent<Laser>();
@@ -190,9 +233,13 @@ public class Enemy : MonoBehaviour
                 {
                     Destroy(other.gameObject);
 
-                    _player.AddScore(10);
+                    if (!_isBoss && !_isEnemyProtected)
+                    {
+                        _player.AddScore(10);
+                    }
 
                     OnEnemyHit();
+                    
                 }
             }
 
@@ -210,27 +257,53 @@ public class Enemy : MonoBehaviour
 
     public void OnEnemyHit()
     {
-        if (!_isEnemyAlive)
+        if (!_isBoss)
         {
-            return;
-        }
+            if (!_isEnemyAlive)
+            {
+                return;
+            }
 
-        if (_isEnemyProtected)
+            if (_isEnemyProtected)
+            {
+                _isEnemyProtected = false;
+                _enemyShieldVisual.SetActive(false);
+                return;
+                
+            }
+
+            _isEnemyAlive = false;
+            _boxCollider2D.enabled = false;
+
+            _anim.SetTrigger("OnEnemyDeath");
+            _audioSource.Play();
+
+            _spawnManager.RemoveEnemy();
+
+            Destroy(this.gameObject, 2.8f);
+        }
+        else
         {
-            _isEnemyProtected = false;
-            _enemyShieldVisual.SetActive(false);
-            return;
+            if (_bossLives > 1)
+            {
+                _bossLives--;
+            }
+            else // Boss is dead
+            {
+                _isEnemyAlive = false;
+                _player.AddScore(_bossScore);
+                _boxCollider2D.enabled = false;
+
+                _anim.SetTrigger("OnEnemyDeath");
+                _audioSource.Play();
+
+                _spawnManager.SetPowerupsSpawning(false);
+                _uiManager.GameFinishedSequence(_player.PlayerScore());
+
+                Destroy(this.gameObject, 2.8f);
+            }
         }
-
-        _isEnemyAlive = false;
-        _boxCollider2D.enabled = false;
-
-        _anim.SetTrigger("OnEnemyDeath");
-        _audioSource.Play();
-
-        _spawnManager.RemoveEnemy();
-
-        Destroy(this.gameObject, 2.8f);
+        
     }
 
     public void SetEnemyConfiguration(bool evasive,bool aggressive, bool smart, bool shield, bool horizontalMovement)
@@ -257,10 +330,16 @@ public class Enemy : MonoBehaviour
 
     public void EvadeLaser()
     {
+        if(!_hasEvadeStarted)
+        {
+            _hasEvadeStarted = true;
+            _evadeDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
+        }
+
         if (_isEvading && _isEnemyAlive)
         {
             {
-                transform.Translate(Vector3.left * 7 * Time.deltaTime);
+                transform.Translate(_evadeDirection * 7 * Time.deltaTime);
             }
         }
     }
@@ -271,6 +350,7 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         _isEvading = false;
         _isEvadingCountdownRunning = false;
+        _hasEvadeStarted = false;
     }
 
     public bool IsEnemyAlive()
@@ -295,5 +375,15 @@ public class Enemy : MonoBehaviour
     {
         Debug.Log("Enemy attacking a powerup!");
         EnemyShot();
+    }
+
+    public bool IsBoss()
+    {
+        return _isBoss;
+    }
+
+    public bool IsProtected()
+    {
+        return _isEnemyProtected;
     }
 }

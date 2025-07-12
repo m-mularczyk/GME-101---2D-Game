@@ -61,8 +61,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private int _remainingEnemies = 0;
     private bool _isEnemyLimitReached = false;
-    //[SerializeField]
-    //private int _waveWithBoss = 3;
+    [SerializeField]
+    private int _waveNumberWithBoss = 2;
     //private bool _isEnemyBossPresent = false;
     [Space(10)]
 
@@ -186,7 +186,7 @@ public class SpawnManager : MonoBehaviour
 
         if (_totalEnemiesSpawned == _enemiesPerLevel)
         {
-            Debug.Log("Reached enemy limit for wave: " + _enemiesPerLevel + ". Stopped spawning enemies");
+            //Debug.Log("Reached enemy limit for wave: " + _enemiesPerLevel + ". Stopped spawning enemies");
             _isSpawningEnemies = false;
             _isEnemyLimitReached = true;
         }
@@ -205,9 +205,18 @@ public class SpawnManager : MonoBehaviour
 
         if(_remainingEnemies == 0 && _isEnemyLimitReached) 
         {
-            _isSpawningPowerups = false;
-            _isSpawningEnemies = false;
-            _uiManager.WaveFinished();
+            if(_currentWave == _waveNumberWithBoss)
+            {
+                _isSpawningEnemies = false;
+                SpawnBoss();
+            }
+            else
+            {
+                _isSpawningPowerups = false;
+                _isSpawningEnemies = false;
+                _uiManager.WaveFinished();
+            }
+            
         }
     }
 
@@ -235,6 +244,17 @@ public class SpawnManager : MonoBehaviour
     {
         float randomNum = Random.Range(0f, 1f);
         return (randomNum <= probability) ? true : false;
+    }
+
+    private void SpawnBoss()
+    {
+        Debug.Log("Spawning boss!");
+        Instantiate(_enemyBossPrefab, new Vector3(0f, 10f, 0f), Quaternion.identity);
+    }
+
+    public void SetPowerupsSpawning(bool powerupsSpawning)
+    {
+        _isSpawningPowerups = powerupsSpawning;
     }
 
 

@@ -34,6 +34,11 @@ public class GameManager : MonoBehaviour
         _isGameOver = true;
     }
 
+    public void GameFinished()
+    {
+        _isGameOver = true;
+    }
+
     public void StartGame()
     {
         SceneManager.LoadScene("Game");

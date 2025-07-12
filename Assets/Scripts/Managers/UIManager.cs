@@ -19,6 +19,9 @@ public class UIManager : MonoBehaviour
     private TMP_Text _gameOverText;
 
     [SerializeField]
+    private TMP_Text _gameFinishedText;
+
+    [SerializeField]
     private TMP_Text _restartText;
 
     [SerializeField]
@@ -115,6 +118,15 @@ public class UIManager : MonoBehaviour
         StartCoroutine(GameOverUIProcedure());
         _restartText.gameObject.SetActive(true);
         _gameManager.GameOver();
+    }
+
+    public void GameFinishedSequence(int playerScore)
+    {
+        _gameFinishedText.gameObject.SetActive(true);
+        _gameFinishedText.text = "Congratulations \nYou WON. Your score is " + playerScore;
+        _restartText.gameObject.SetActive(true);
+        _gameManager.GameFinished();
+
     }
 
     // Shield Strength UI updating
