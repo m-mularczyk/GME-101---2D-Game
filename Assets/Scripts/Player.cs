@@ -17,8 +17,22 @@ public class Player : MonoBehaviour
     private int _maxAmmo = 15;
     [SerializeField]
     private int _currentAmmo;
+    
+    [Header("Thrusters")]
     [SerializeField]
-    private float _shiftSpeedModifier = 1.5f;
+    private bool _thrustersActive = false;
+    [SerializeField]
+    private float _thrustersSpeedModifier = 1.7f;
+    [SerializeField]
+    private float _thrustersDuration = 4f;
+    private float _thrustersStart;
+    private float _thrustersRemaining = 4f;
+    private float _thrustersRemainingPercentage;
+    [SerializeField]
+    private float _thrustersLeft;
+    [SerializeField]
+    private int _thrustersCooldown = 10;
+    private bool _thrustersResetting = false;
 
     [Header("Laser settings")]
     [SerializeField]
@@ -92,6 +106,8 @@ public class Player : MonoBehaviour
     private float _horizontalInput;
     private float _verticalInput;
 
+    
+
 
 
 
@@ -130,14 +146,21 @@ public class Player : MonoBehaviour
         _currentAmmo = _maxAmmo;
         _uiManager.UpdateAmmoCount(_currentAmmo);
 
+
+        _thrustersLeft = _thrustersDuration;
     }
 
     // Update is called once per frame
     void Update()
     {
         CalculateMovement();
+        ThrustersProcedure();
         ShootProcedure();
+        PowerupMagnetProcedure();
+    }
 
+    private static void PowerupMagnetProcedure()
+    {
         if (Input.GetKeyDown(KeyCode.C))
         {
             Powerup[] powerups = GameObject.FindObjectsOfType<Powerup>();
@@ -148,7 +171,6 @@ public class Player : MonoBehaviour
                     powerup.StartMovingTowardsPlayer();
                 }
             }
-
             //Debug.Log("Powerup magnets enabled");
         }
     }
@@ -165,16 +187,16 @@ public class Player : MonoBehaviour
             transform.Translate(direction * _speed * Time.deltaTime);
         } else
         {
-            if (Input.GetKey(KeyCode.LeftShift))
+            if(_thrustersActive)
             {
-                transform.Translate(direction * _speed * _shiftSpeedModifier * Time.deltaTime);
+                transform.Translate(direction * _speed * _thrustersSpeedModifier * Time.deltaTime);
             }
             else
             {
-                transform.Translate(direction * _speed * Time.deltaTime);
+            transform.Translate(direction * _speed * Time.deltaTime);
             }
+            
         }
-
 
         if (transform.position.x > _horizontalBound)
         {
@@ -187,6 +209,54 @@ public class Player : MonoBehaviour
         
         transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, -4f, 2f), 0);
         
+    }
+
+    void ThrustersProcedure()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !_thrustersResetting)
+        {
+            //Debug.Log("Shift PRESSED");
+            _thrustersActive = true;
+            _uiManager.ThrustersActive(_thrustersActive);
+            _thrustersStart = Time.time;
+        }
+
+        if (_thrustersActive)
+        {
+            _thrustersRemaining = _thrustersStart + _thrustersLeft - Time.time;
+            _thrustersRemainingPercentage = _thrustersRemaining / _thrustersDuration;
+            _uiManager.DisplayThrustersCharge(_thrustersRemainingPercentage);
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            //Debug.Log("Shift RELEASED");
+            _thrustersActive = false;
+            _thrustersLeft = _thrustersRemaining;
+            _uiManager.ThrustersActive(_thrustersActive);
+        }
+
+        if (_thrustersRemaining <= 0)
+        {
+            _thrustersActive = false;
+            _thrustersLeft = _thrustersDuration;
+            _thrustersRemaining = _thrustersDuration;
+            _uiManager.ThrustersActive(_thrustersActive);
+            StartCoroutine(ThrustersCooldown(_thrustersCooldown));
+        }
+    }
+
+    IEnumerator ThrustersCooldown(int cooldownTime)
+    {
+        _thrustersResetting = true;
+        for (int i = cooldownTime; i > 0; i--) 
+        {
+            _uiManager.DisplayThrustersCooldown(i);
+            yield return new WaitForSeconds(1f);
+        }
+        _uiManager.HideThrustersCooldown();
+        _uiManager.DisplayThrustersCharge(1f);
+        _thrustersResetting = false;
     }
 
     void ShootProcedure()
@@ -277,7 +347,7 @@ public class Player : MonoBehaviour
     public void SpeedBoostActive()
     {
         _isSpeedBoostActive = true;
-        _speed = _speed * _speedBoost;
+        _speed = _speed * _speedBoost; //For Inspector information only
 
         _uiManager.SpeedBoostIndicatorStart(_speedBoostDuration);
 
@@ -345,10 +415,10 @@ public class Player : MonoBehaviour
     public void SpecialWeaponActive()
     {
         _isShotgunActive = true;
-        StartCoroutine(SpecialWeaponCountdown());
+        StartCoroutine(ShotgunCountdown());
     }
 
-    IEnumerator SpecialWeaponCountdown()
+    IEnumerator ShotgunCountdown()
     {
         yield return new WaitForSeconds(5);
         _isShotgunActive = false;
@@ -358,5 +428,4 @@ public class Player : MonoBehaviour
     {
         _isHomingMissileActive = true;
     }
-
 }

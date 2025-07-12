@@ -29,17 +29,24 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private TMP_Text _ammoText;
 
+
     [SerializeField]
     private Image _speedBoostDurationImage;
     private bool _isSpeedBoostActive = false;
     private float _speedBoostDuration;
     private float _countdownStart;
-    [SerializeField]
     private float _countdownLeft;
     [SerializeField]
     private TMP_Text _waveFinishedText;
     [SerializeField]
     private TMP_Text _newWaveCountdownText;
+
+    [SerializeField]
+    private GameObject _thrustersImage;
+    [SerializeField]
+    private Image _thrustersIndicatorImage;
+    [SerializeField]
+    private TMP_Text _thrustersCooldownCounterText;
 
 
     private GameManager _gameManager;
@@ -166,17 +173,17 @@ public class UIManager : MonoBehaviour
         }
     }
 
+
     public void WaveFinished()
     {
         StartCoroutine(WaveFinishedSequence());
-        
     }
 
     IEnumerator WaveFinishedSequence()
     {
         _waveFinishedText.gameObject.SetActive(true);
         _waveFinishedText.text = "Wave " + _spawnManager.GetCurrentWaveNumber() + " finished";
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.5f);
 
         _newWaveCountdownText.gameObject.SetActive(true);
         _newWaveCountdownText.text = "New wave in: 3";
@@ -190,5 +197,38 @@ public class UIManager : MonoBehaviour
         _newWaveCountdownText.gameObject.SetActive(false);
 
         _spawnManager.StartNewWave();
+    }
+
+
+    public void DisplayThrustersCharge(float chargeValue)
+    {
+        _thrustersIndicatorImage.fillAmount = chargeValue;
+    }
+
+    public void DisplayThrustersCooldown(int cooldownCount)
+    {
+        _thrustersCooldownCounterText.gameObject.SetActive(true);
+        _thrustersCooldownCounterText.text = cooldownCount.ToString();
+    }
+
+    public void HideThrustersCooldown()
+    {
+        _thrustersCooldownCounterText.gameObject.SetActive(false);
+    }
+
+    public void ThrustersActive(bool value)
+    {
+        if(value == true)
+        {
+            _thrustersImage.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+            _thrustersImage.GetComponent<SpriteRenderer>().color = new Color(1f, 0.73f, 0.73f, 1f);
+            //_thrustersIndicatorImage.gameObject.SetActive(true);
+        }
+        else
+        {
+            _thrustersImage.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            _thrustersImage.GetComponent<SpriteRenderer>().color = Color.white;
+        }
+        
     }
 }

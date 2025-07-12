@@ -18,9 +18,12 @@ public class Enemy : MonoBehaviour
     private bool _isEnemyAggressive = false;
     [SerializeField]
     private bool _isEnemySmart = false;
-    
     [SerializeField]
     private bool _isEnemyProtected = false;
+
+    [SerializeField]
+    private bool _horizontalMovement = false;
+    private Vector3 _horizontalDirection = Vector3.left;
 
     private Player _player;
     private Animator _anim;
@@ -30,9 +33,11 @@ public class Enemy : MonoBehaviour
     private GameManager _gameManager;
 
     private bool _isEnemyAlive = true;
-
     private float _fireRate = 3f;
     private float _canFire = -1f;
+
+    private bool _isRammingCountdownRunning = false;
+    private bool _isEvadingCountdownRunning = false;
 
     [SerializeField]
     private Vector3 _laserOffset = Vector3.down;
@@ -140,13 +145,31 @@ public class Enemy : MonoBehaviour
         if (_isRamming && _isEnemyAggressive)
         {
             transform.Translate(Vector3.down * _enemySpeed * _rammingSpeedMultiplier * Time.deltaTime);
-            StartCoroutine(RammingCountdown());
-
+            
+            if (!_isRammingCountdownRunning)
+            {
+                StartCoroutine(RammingCountdown());
+                _isRammingCountdownRunning = true;
+            }
         } else
         {
             transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
         }
 
+        if (_horizontalMovement )
+        {
+            transform.Translate(_horizontalDirection * (_enemySpeed / 2) * Time.deltaTime);
+
+            if(transform.position.x <= -6 && _isEnemyAlive)
+            {
+                _horizontalDirection = Vector3.right;
+            }
+            
+            if (transform.position.x >= 6 && _isEnemyAlive)
+            {
+                _horizontalDirection = Vector3.left;
+            }
+        }
 
         if (transform.position.y < -6 && _isEnemyAlive && !_gameManager.IsGameOver())
         {
@@ -208,16 +231,15 @@ public class Enemy : MonoBehaviour
         _spawnManager.RemoveEnemy();
 
         Destroy(this.gameObject, 2.8f);
-        
     }
 
-    public void SetEnemyConfiguration(bool evasive,bool aggressive, bool smart, bool shield)
+    public void SetEnemyConfiguration(bool evasive,bool aggressive, bool smart, bool shield, bool horizontalMovement)
     {
-        
         _isEnemyEvasive = evasive;
         _isEnemyAggressive = aggressive;
         _isEnemySmart = smart;
         _isEnemyProtected = shield;
+        _horizontalMovement = horizontalMovement;
     }
 
 
@@ -225,6 +247,12 @@ public class Enemy : MonoBehaviour
     public void LaserDetected()
     {
         _isEvading = true;
+
+        if (!_isEvadingCountdownRunning)
+        {
+            StartCoroutine(EvadingCountdown());
+            _isEvadingCountdownRunning = true;
+        }
     }
 
     public void EvadeLaser()
@@ -234,14 +262,15 @@ public class Enemy : MonoBehaviour
             {
                 transform.Translate(Vector3.left * 7 * Time.deltaTime);
             }
-                StartCoroutine(EvadingCountdown());
         }
     }
 
     IEnumerator EvadingCountdown()
     {
+        //Debug.Log("Enemy is evading shot");
         yield return new WaitForSeconds(0.2f);
         _isEvading = false;
+        _isEvadingCountdownRunning = false;
     }
 
     public bool IsEnemyAlive()
@@ -256,8 +285,10 @@ public class Enemy : MonoBehaviour
 
     IEnumerator RammingCountdown()
     {
+        //Debug.Log("Enemy is ramming player!");
         yield return new WaitForSeconds(0.75f);
         _isRamming = false;
+        _isRammingCountdownRunning = false;
     }
 
     public void AttackPowerup()

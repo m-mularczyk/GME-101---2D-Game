@@ -23,6 +23,8 @@ public class SpawnManager : MonoBehaviour
     private float _hasShieldProbability = 0.3f;
     [SerializeField]
     private float _isSmartProbability = 0.2f;
+    [SerializeField]
+    private float _horizontalMogementProbability = 0.25f;
     [Space(10)]
 
     [Header("POWERUP SPAWNING")]
@@ -59,9 +61,9 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private int _remainingEnemies = 0;
     private bool _isEnemyLimitReached = false;
-    [SerializeField]
-    private int _waveWithBoss = 3;
-    private bool _isEnemyBossPresent = false;
+    //[SerializeField]
+    //private int _waveWithBoss = 3;
+    //private bool _isEnemyBossPresent = false;
     [Space(10)]
 
     [Header("REFERENCES")]
@@ -115,7 +117,7 @@ public class SpawnManager : MonoBehaviour
             GameObject newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
             newEnemy.transform.SetParent(_enemyContainer.transform);
 
-            newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability));
+            newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
             AddEnemy();
             yield return new WaitForSeconds(5f);
         }
