@@ -49,7 +49,7 @@ public class HomingMissile : MonoBehaviour
             _targetAcquired = true;
         }
 
-        StartCoroutine(HomingMissileRemoval(_missileLifespan));
+        StartCoroutine(HomingMissileDisposal(_missileLifespan));
 
     }
 
@@ -98,7 +98,7 @@ public class HomingMissile : MonoBehaviour
         }
     }
 
-    IEnumerator HomingMissileRemoval(float secondsToDestruction)
+    IEnumerator HomingMissileDisposal(float secondsToDestruction)
     {
         yield return new WaitForSeconds(secondsToDestruction);
         Destroy(gameObject);

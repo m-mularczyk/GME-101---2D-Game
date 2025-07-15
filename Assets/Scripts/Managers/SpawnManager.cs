@@ -73,6 +73,7 @@ public class SpawnManager : MonoBehaviour
     private UIManager _uiManager;
     [SerializeField]
     private GameManager _gameManager;
+    private Player _player;
 
     private Coroutine _enemySpawnRoutine;
     private Coroutine _powerupSpawnRoutine;
@@ -90,6 +91,13 @@ public class SpawnManager : MonoBehaviour
         {
             Debug.LogError("Game Manager is NULL");
         }
+
+        _player = GameObject.Find("Player").GetComponent<Player>();
+        if (_player == null)
+        {
+            Debug.LogError("Player is NULL");
+        }
+
     }
 
 
@@ -117,18 +125,27 @@ public class SpawnManager : MonoBehaviour
         {
             float randomX = Random.Range(-9f, 9f);
             float ramdomNum = Random.Range(0f, 1f);
-            GameObject newEnemy = null;
-            if (ramdomNum < _specialEnemySpawnProbability) // Special enemy spawning
+            // Special enemy spawning
+            if (ramdomNum < _specialEnemySpawnProbability) 
             {
-                newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
-                newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
+                GameObject specialEnemy = Instantiate(_specialEnemy, new Vector3(randomX, 10, 0), Quaternion.identity);
+                if (_player != null)
+                {
+                    Vector2 direction = _player.transform.position - specialEnemy.transform.position;
+                    specialEnemy.transform.up = -direction;
+                }
+                specialEnemy.transform.SetParent(_enemyContainer.transform);
             }
-            else // Regular enemy spawning
+            else
+            // Regular enemy spawning
             {
-                newEnemy = Instantiate(_specialEnemy, new Vector3(randomX, 10, 0), Quaternion.identity);
+
+                GameObject newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
+                newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
+                newEnemy.transform.SetParent(_enemyContainer.transform);
             }
             
-            newEnemy.transform.SetParent(_enemyContainer.transform);
+            
             
             AddEnemy();
             yield return new WaitForSeconds(5f);

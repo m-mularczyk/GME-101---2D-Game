@@ -820,10 +820,10 @@ MonoBehaviour:
   _enemyPrefab: {fileID: 1458460782181400761, guid: d5258918df138b344b9f2427573897d1, type: 3}
   _specialEnemy: {fileID: 1458460782181400761, guid: d13be00a732851a42a15754632ce25a1, type: 3}
   _enemyBossPrefab: {fileID: 1458460782181400761, guid: a867c4c947fce7e4d8f2f4c02c94a4be, type: 3}
-  _specialEnemySpawnProbability: 0.4
+  _specialEnemySpawnProbability: 0.45
   _isEvasiveProbability: 0.8
   _isAggressiveProbability: 0.2
-  _hasShieldProbability: 0.2
+  _hasShieldProbability: 0.25
   _isSmartProbability: 0.25
   _horizontalMogementProbability: 0.3
   _powerups:

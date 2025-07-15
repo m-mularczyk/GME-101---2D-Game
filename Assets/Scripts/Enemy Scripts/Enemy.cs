@@ -14,8 +14,11 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private GameObject _enemyLaserPrefab;
     [SerializeField]
+    private Transform _laserSpawnPoint;
+    [SerializeField]
     private GameObject _enemyShieldVisual;
-    
+
+    [Header("ENEMY CONFIGURATION")]
     [SerializeField]
     private bool _isEnemyEvasive = false;
     [SerializeField]
@@ -24,7 +27,10 @@ public class Enemy : MonoBehaviour
     private bool _isEnemySmart = false;
     [SerializeField]
     private bool _isEnemyShielded = false;
-
+    [Space(8)]
+    [SerializeField]
+    private bool _isSpecialEnemy = false;
+    [Space(8)]
     [SerializeField]
     private bool _horizontalMovement = false;
     private Vector3 _horizontalDirection = Vector3.left;
@@ -44,8 +50,7 @@ public class Enemy : MonoBehaviour
 
     //[SerializeField]
     //private Vector3 _laserOffset = Vector3.down;
-    [SerializeField]
-    private Transform _laserSpawnPoint;
+    
 
     private bool _isEvading = false;
     private bool _isRamming = false;
@@ -124,6 +129,7 @@ public class Enemy : MonoBehaviour
         {
             Debug.Log("UI Manager is NULL");
         }
+
     }
 
     // Update is called once per frame
@@ -232,7 +238,7 @@ public class Enemy : MonoBehaviour
                     _isRammingCountdownRunning = true;
                 }
             }
-            else // Default movement
+            else // Basic movement
             {
                 transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime, Space.Self);
             }
@@ -257,6 +263,12 @@ public class Enemy : MonoBehaviour
                 float randomX = Random.Range(-9f, 9f);
                 float randomY = Random.Range(10f, 15f);
                 transform.position = new Vector3(randomX, randomY, 0);
+
+                if (_isSpecialEnemy && _player != null)
+                {
+                    Vector2 direction = _player.transform.position - transform.position;
+                    transform.up = -direction;
+                }
             }
         }
         else // Boss movement
