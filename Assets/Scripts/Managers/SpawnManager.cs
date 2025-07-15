@@ -7,13 +7,15 @@ public class SpawnManager : MonoBehaviour
 
     [Header("ENEMY SPAWNING SETUP")]
     [SerializeField]
+    private GameObject _enemyContainer;
+    [SerializeField]
     private GameObject _enemyPrefab;
     [SerializeField]
-    private GameObject _enemyContainer;
-    //[SerializeField]
-    //private GameObject[] _rareEnemiesPrefabs;
+    private GameObject _specialEnemy;
     [SerializeField]
     private GameObject _enemyBossPrefab;
+    [SerializeField]
+    private float _specialEnemySpawnProbability = 0.4f;
     [Space(8)]
     [SerializeField]
     private float _isEvasiveProbability = 0.2f;
@@ -114,10 +116,20 @@ public class SpawnManager : MonoBehaviour
         while (_isSpawningEnemies)
         {
             float randomX = Random.Range(-9f, 9f);
-            GameObject newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
+            float ramdomNum = Random.Range(0f, 1f);
+            GameObject newEnemy = null;
+            if (ramdomNum < _specialEnemySpawnProbability) // Special enemy spawning
+            {
+                newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
+                newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
+            }
+            else // Regular enemy spawning
+            {
+                newEnemy = Instantiate(_specialEnemy, new Vector3(randomX, 10, 0), Quaternion.identity);
+            }
+            
             newEnemy.transform.SetParent(_enemyContainer.transform);
-
-            newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
+            
             AddEnemy();
             yield return new WaitForSeconds(5f);
         }

@@ -2,11 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _enemySpeed = 4f;
+    [SerializeField]
+    private float _fireRate = 3f;
+    private float _canFire = -1f;
     [SerializeField]
     private GameObject _enemyLaserPrefab;
     [SerializeField]
@@ -19,7 +23,7 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private bool _isEnemySmart = false;
     [SerializeField]
-    private bool _isEnemyProtected = false;
+    private bool _isEnemyShielded = false;
 
     [SerializeField]
     private bool _horizontalMovement = false;
@@ -34,14 +38,14 @@ public class Enemy : MonoBehaviour
     private UIManager _uiManager;
 
     private bool _isEnemyAlive = true;
-    private float _fireRate = 3f;
-    private float _canFire = -1f;
 
     private bool _isRammingCountdownRunning = false;
     private bool _isEvadingCountdownRunning = false;
 
+    //[SerializeField]
+    //private Vector3 _laserOffset = Vector3.down;
     [SerializeField]
-    private Vector3 _laserOffset = Vector3.down;
+    private Transform _laserSpawnPoint;
 
     private bool _isEvading = false;
     private bool _isRamming = false;
@@ -49,6 +53,7 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private float _rammingSpeedMultiplier = 1.6f;
 
+    [Header("BOSS SETTINGS")]
     [SerializeField]
     private bool _isBoss = false;
     [SerializeField]
@@ -56,8 +61,18 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private int _bossLives = 5;
     [SerializeField]
+    private float _bossFireRate = 3f;
+    [SerializeField]
     private int _bossScore = 100;
+    [SerializeField]
+    private GameObject _bossLaserPrefab;
+    [SerializeField]
+    private Vector3 _bossLaserOffset = Vector3.down;
+    [SerializeField]
+    private Transform _bossLaserSpawnPoint;
+
     private Vector3 _bossDirection = Vector3.down;
+    private bool _bossReachedDestination = false;
 
     private bool _hasEvadeStarted = false;
     private Vector3 _evadeDirection = Vector3.left;
@@ -70,12 +85,14 @@ public class Enemy : MonoBehaviour
         {
             Debug.LogError("Player is NULL");
         }
+
         _anim = GetComponent<Animator>();
         if (_anim == null)
         {
             Debug.LogError("Animator is NULL");
         }
         _boxCollider2D = GetComponent<BoxCollider2D>();
+
         if (_boxCollider2D == null)
         {
             Debug.LogError("BoxCollider2D is NULL");
@@ -97,7 +114,7 @@ public class Enemy : MonoBehaviour
 
         _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
 
-        if (_isEnemyProtected)
+        if (_isEnemyShielded)
         {
             _enemyShieldVisual.SetActive(true);
         }
@@ -112,34 +129,32 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CalculateMovement();
 
-        if (!_isBoss)
+        if (_isEnemyEvasive)
         {
-            CalculateMovement();
-
-            if (Time.time > _canFire && _isEnemyAlive)
-            {
-                EnemyFiring();
-            }
-
             EvadeLaser();
         }
-        else
-        {
-            transform.Translate(_bossDirection * _bossSpeed * Time.deltaTime);
 
-            if (transform.position.y <= 2f)
-            {
-                _bossSpeed = 0f;
-            }
+        if (Time.time > _canFire && _isEnemyAlive)
+        {
+            EnemyFiring();
         }
-        
     }
 
     private void EnemyFiring()
     {
-        _fireRate = Random.Range(3f, 7f);
-        _canFire = Time.time + _fireRate;
+        if (!_isBoss)
+        {
+            _fireRate = Random.Range(3f, 7f);
+            _canFire = Time.time + _fireRate;
+        }
+        else
+        {
+            _canFire = Time.time + _bossFireRate;
+        }
+
+
         if (_player != null)
         {
             if (_isEnemySmart && transform.position.y < _player.transform.position.y && !_gameManager.IsGameOver())
@@ -150,7 +165,17 @@ public class Enemy : MonoBehaviour
             else
             {
                 // Standard shooting
-                EnemyShot();
+                if (!_isBoss)
+                {
+                    EnemyShot();
+                }
+                else
+                {
+                    if (_bossReachedDestination)
+                    {
+                        BossShot();
+                    }
+                }
             }
         }
         
@@ -158,7 +183,22 @@ public class Enemy : MonoBehaviour
 
     private void EnemyShot()
     {
-        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffset, Quaternion.identity);
+        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, _laserSpawnPoint.position, transform.rotation);
+        Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
+
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            lasers[i].AssignEnemyLaser();
+        }
+    }
+
+    private void BossShot()
+    {
+        Vector3 playerPos = _player.transform.position;
+        Vector3 playerDirection = playerPos - transform.position;
+
+        //GameObject enemyLaser = Instantiate(_bossLaserPrefab, transform.position + _laserOffset, transform.rotation);
+        GameObject enemyLaser = Instantiate(_bossLaserPrefab, _bossLaserSpawnPoint.position, transform.rotation);
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
         for (int i = 0; i < lasers.Length; i++)
@@ -169,7 +209,7 @@ public class Enemy : MonoBehaviour
 
     private void EnemyShotBackwards()
     {
-        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, transform.position + _laserOffset, Quaternion.Euler(new Vector3(0, 0, 180)));
+        GameObject enemyLaser = Instantiate(_enemyLaserPrefab, _laserSpawnPoint.position, Quaternion.Euler(new Vector3(0, 0, 180)));
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
         for (int i = 0; i < lasers.Length; i++)
@@ -180,41 +220,63 @@ public class Enemy : MonoBehaviour
 
     private void CalculateMovement()
     {
-        if (_isRamming && _isEnemyAggressive)
+        if (!_isBoss) // Movement of a regular enemy
         {
-            transform.Translate(Vector3.down * _enemySpeed * _rammingSpeedMultiplier * Time.deltaTime);
-            
-            if (!_isRammingCountdownRunning)
+            if (_isRamming && _isEnemyAggressive) // Movement when ramming player
             {
-                StartCoroutine(RammingCountdown());
-                _isRammingCountdownRunning = true;
+                transform.Translate(Vector3.down * _enemySpeed * _rammingSpeedMultiplier * Time.deltaTime);
+
+                if (!_isRammingCountdownRunning)
+                {
+                    StartCoroutine(RammingCountdown());
+                    _isRammingCountdownRunning = true;
+                }
             }
-        } else
-        {
-            transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime);
-        }
-
-        if (_horizontalMovement )
-        {
-            transform.Translate(_horizontalDirection * (_enemySpeed / 2) * Time.deltaTime);
-
-            if(transform.position.x <= -6 && _isEnemyAlive)
+            else // Default movement
             {
-                _horizontalDirection = Vector3.right;
+                transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime, Space.Self);
             }
-            
-            if (transform.position.x >= 6 && _isEnemyAlive)
-            {
-                _horizontalDirection = Vector3.left;
-            }
-        }
 
-        if (transform.position.y < -6 && _isEnemyAlive && !_gameManager.IsGameOver())
-        {
-            float randomX = Random.Range(-9f, 9f);
-            float randomY = Random.Range(10f, 15f);
-            transform.position = new Vector3(randomX, randomY, 0);
+            if (_horizontalMovement)
+            {
+                transform.Translate(_horizontalDirection * (_enemySpeed / 2) * Time.deltaTime);
+
+                if (transform.position.x <= -6 && _isEnemyAlive)
+                {
+                    _horizontalDirection = Vector3.right;
+                }
+
+                if (transform.position.x >= 6 && _isEnemyAlive)
+                {
+                    _horizontalDirection = Vector3.left;
+                }
+            }
+
+            if (transform.position.y < -6 && _isEnemyAlive && !_gameManager.IsGameOver())
+            {
+                float randomX = Random.Range(-9f, 9f);
+                float randomY = Random.Range(10f, 15f);
+                transform.position = new Vector3(randomX, randomY, 0);
+            }
         }
+        else // Boss movement
+        {
+            transform.Translate(_bossDirection * _bossSpeed * Time.deltaTime);
+
+            if (transform.position.y <= 2f)
+            {
+                _bossSpeed = 0f;
+                _bossReachedDestination = true;
+
+                // Rotate boss towards player
+                if (_player != null)
+                {
+                    Vector2 direction = _player.transform.position - transform.position;
+                    transform.up = -direction;
+                }
+            }
+        }
+        
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -233,7 +295,7 @@ public class Enemy : MonoBehaviour
                 {
                     Destroy(other.gameObject);
 
-                    if (!_isBoss && !_isEnemyProtected)
+                    if (!_isBoss && !_isEnemyShielded)
                     {
                         _player.AddScore(10);
                     }
@@ -264,9 +326,9 @@ public class Enemy : MonoBehaviour
                 return;
             }
 
-            if (_isEnemyProtected)
+            if (_isEnemyShielded)
             {
-                _isEnemyProtected = false;
+                _isEnemyShielded = false;
                 _enemyShieldVisual.SetActive(false);
                 return;
                 
@@ -311,7 +373,7 @@ public class Enemy : MonoBehaviour
         _isEnemyEvasive = evasive;
         _isEnemyAggressive = aggressive;
         _isEnemySmart = smart;
-        _isEnemyProtected = shield;
+        _isEnemyShielded = shield;
         _horizontalMovement = horizontalMovement;
     }
 
@@ -373,10 +435,14 @@ public class Enemy : MonoBehaviour
 
     public void AttackPowerup()
     {
-        Debug.Log("Enemy attacking a powerup!");
-        EnemyShot();
+        if (!_isBoss)
+        {
+            //Debug.Log("Enemy attacking a powerup!");
+            EnemyShot();
+        } 
     }
 
+    // GETTERS
     public bool IsBoss()
     {
         return _isBoss;
@@ -384,6 +450,6 @@ public class Enemy : MonoBehaviour
 
     public bool IsProtected()
     {
-        return _isEnemyProtected;
+        return _isEnemyShielded;
     }
 }

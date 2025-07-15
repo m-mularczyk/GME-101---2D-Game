@@ -293,9 +293,12 @@ public class Player : MonoBehaviour
             // Standard shot
             else
             {
-                Instantiate(_laserPrefab, transform.position + Vector3.up * _laserSpawnOffset, Quaternion.identity);
-                _currentAmmo--;
-                _uiManager.UpdateAmmoCount(_currentAmmo);
+                if (_currentAmmo > 0)
+                {
+                    Instantiate(_laserPrefab, transform.position + Vector3.up * _laserSpawnOffset, Quaternion.identity);
+                    _currentAmmo--;
+                    _uiManager.UpdateAmmoCount(_currentAmmo);
+                }
             }
 
             _audioSource.Play();

@@ -816,13 +816,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3303c9f3f371b54f8a27d15daf15e9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyPrefab: {fileID: 1458460782181400761, guid: d5258918df138b344b9f2427573897d1, type: 3}
   _enemyContainer: {fileID: 849470698}
+  _enemyPrefab: {fileID: 1458460782181400761, guid: d5258918df138b344b9f2427573897d1, type: 3}
+  _specialEnemy: {fileID: 1458460782181400761, guid: d13be00a732851a42a15754632ce25a1, type: 3}
   _enemyBossPrefab: {fileID: 1458460782181400761, guid: a867c4c947fce7e4d8f2f4c02c94a4be, type: 3}
+  _specialEnemySpawnProbability: 0.4
   _isEvasiveProbability: 0.8
   _isAggressiveProbability: 0.2
   _hasShieldProbability: 0.2
-  _isSmartProbability: 0.2
+  _isSmartProbability: 0.25
   _horizontalMogementProbability: 0.3
   _powerups:
   - {fileID: 9057076708853260519, guid: 850b0c8d2f3fbc84bb58212dfed8a940, type: 3}
@@ -844,7 +846,7 @@ MonoBehaviour:
   _isSpawningEnemies: 0
   _isSpawningPowerups: 0
   _currentWave: 1
-  _enemiesPerLevel: 6
+  _enemiesPerLevel: 4
   _enemiesMultiplier: 1.3
   _maxEnemiesOnScreen: 8
   _totalEnemiesSpawned: 0

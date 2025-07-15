@@ -29,11 +29,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void GameOver()
-    {
-        _isGameOver = true;
-    }
-
     public void GameFinished()
     {
         _isGameOver = true;
@@ -44,6 +39,12 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("Game");
     }
 
+    public void GameOver()
+    {
+        _isGameOver = true;
+    }
+
+    // GETTERS
     public bool IsGameOver()
     {
         return _isGameOver;

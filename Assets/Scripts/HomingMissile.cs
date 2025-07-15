@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using static UnityEngine.GraphicsBuffer;
 
 public class HomingMissile : MonoBehaviour
 {
 
     [SerializeField]
     private float _missileSpeed = 12f;
+    [SerializeField]
+    private float _missileLifespan = 3f;
 
     private Enemy[] _enemies;
     private Enemy _closestEnemy;
@@ -20,6 +20,10 @@ public class HomingMissile : MonoBehaviour
     void Start()
     {
         _player = GameObject.Find("Player").GetComponent<Player>();
+        if(_player == null)
+        {
+            Debug.LogError("Player is NULL");
+        }
 
         _enemies = GameObject.FindObjectsOfType<Enemy>();
 
@@ -45,13 +49,14 @@ public class HomingMissile : MonoBehaviour
             _targetAcquired = true;
         }
 
-        StartCoroutine(HomingMissileRemoval());
+        StartCoroutine(HomingMissileRemoval(_missileLifespan));
 
     }
 
     // Update is called once per frame
     void Update()
     {
+
         if (_closestEnemy == null || !_closestEnemy.IsEnemyAlive())
         {
             _targetAcquired = false;
@@ -70,15 +75,6 @@ public class HomingMissile : MonoBehaviour
         else
         {
             transform.Translate(Vector3.up * _missileSpeed * Time.deltaTime);
-
-            if (transform.position.y > 8)
-            {
-                if (transform.parent != null)
-                {
-                    Destroy(transform.parent.gameObject);
-                }
-                Destroy(gameObject);
-            }
         }
     }
 
@@ -102,9 +98,9 @@ public class HomingMissile : MonoBehaviour
         }
     }
 
-    IEnumerator HomingMissileRemoval()
+    IEnumerator HomingMissileRemoval(float secondsToDestruction)
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(secondsToDestruction);
         Destroy(gameObject);
     }
 }

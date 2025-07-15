@@ -16,14 +16,9 @@ public class EnemyRadar : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Player laser in range
         if (other.CompareTag("Laser"))
         {
             Laser laser = other.GetComponent<Laser>();
@@ -35,10 +30,12 @@ public class EnemyRadar : MonoBehaviour
                 }
             }
         }
+        // Player in range
         else if (other.CompareTag("Player"))
         {
             _enemy.RamPlayer(other.GetComponent<Player>());
         }
+        // Powerup in range
         else if (other.CompareTag("Powerup"))
         {
             _enemy.AttackPowerup();
