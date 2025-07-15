@@ -27,7 +27,7 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Image _shieldStatus;
     [SerializeField]
-    private Sprite[] _shieldRegression;
+    private Sprite[] _shieldRegressionLevels;
 
     [SerializeField]
     private TMP_Text _ammoText;
@@ -86,6 +86,11 @@ public class UIManager : MonoBehaviour
     public void UpdateScore(int updatedScore)
     {
         _scoreText.text = "Score: " + updatedScore;
+        Animator scoreTextAnimator = _scoreText.GetComponent<Animator>();
+        if (scoreTextAnimator != null)
+        {
+            scoreTextAnimator.SetTrigger("TextPopup");
+        }
     }
 
     public void UpdateLives(int lives)
@@ -98,6 +103,15 @@ public class UIManager : MonoBehaviour
         if(lives == 0)
         {
             GameOverSequence();
+        }
+    }
+
+    public void PopupLivesUI()
+    {
+        Animator livesAnimator = _livesImage.GetComponent<Animator>();
+        if (livesAnimator != null)
+        {
+            livesAnimator.SetTrigger("TextPopup");
         }
     }
 
@@ -134,14 +148,21 @@ public class UIManager : MonoBehaviour
     {
         if(shieldLevel >= 0)
         {
-            if(shieldLevel > _shieldRegression.Length - 1)
+            if(shieldLevel > _shieldRegressionLevels.Length - 1)
             {
-                _shieldStatus.sprite = _shieldRegression[_shieldRegression.Length -1];
+                _shieldStatus.sprite = _shieldRegressionLevels[_shieldRegressionLevels.Length -1];
             } else
             {
-                _shieldStatus.sprite = _shieldRegression[shieldLevel];
+                _shieldStatus.sprite = _shieldRegressionLevels[shieldLevel];
             }
             _shieldStatus.gameObject.SetActive(true);
+
+            Animator shieldAnimator = _shieldStatus.GetComponent<Animator>();
+            if (shieldAnimator != null)
+            {
+                shieldAnimator.SetTrigger("TextPopup");
+            }
+
             
         }
         else
@@ -155,11 +176,19 @@ public class UIManager : MonoBehaviour
     {
         if (ammoCount >= 0)
         {
-            _ammoText.text = "Ammo: " + ammoCount;
+            _ammoText.text = "Ammo: " + ammoCount; 
         }
         else
         {
             _ammoText.text = "Ammo: " + 0;
+        }
+    }
+    public void PopupAmmoText()
+    {
+        Animator textAnimator = _ammoText.GetComponent<Animator>();
+        if (textAnimator != null)
+        {
+            textAnimator.SetTrigger("TextPopup");
         }
     }
 
@@ -172,7 +201,7 @@ public class UIManager : MonoBehaviour
         _countdownStart = Time.time;
     }
 
-    // SpeedBoost duration indicator
+    // SpeedBoost duration countdown
     private void SpeedBoostIndicatorCountdown()
     {
         _countdownLeft = _countdownStart + _speedBoostDuration - Time.time;

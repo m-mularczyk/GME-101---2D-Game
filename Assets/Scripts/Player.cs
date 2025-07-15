@@ -397,8 +397,17 @@ public class Player : MonoBehaviour
 
     public void RefillAmmo()
     {
-        _currentAmmo = _maxAmmo;
-        _uiManager.UpdateAmmoCount(_currentAmmo);
+        if(_currentAmmo == _maxAmmo)
+        {
+            return;
+        }
+        else
+        {
+            _currentAmmo = _maxAmmo;
+            _uiManager.UpdateAmmoCount(_currentAmmo);
+            _uiManager.PopupAmmoText();
+        }
+        
     }
 
     public void HealPlayer()
@@ -409,6 +418,7 @@ public class Player : MonoBehaviour
         }
         _lives++;
         _uiManager.UpdateLives(_lives);
+        _uiManager.PopupLivesUI();
 
         if (_lives == 2)
         {
