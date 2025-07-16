@@ -14,6 +14,8 @@ public class Enemy : MonoBehaviour
     private Transform _laserSpawnPoint;
     [SerializeField]
     private GameObject _enemyShieldVisual;
+    [SerializeField]
+    private GameObject _explosionPrefab;
 
     [Header("ENEMY CONFIGURATION")]
     [SerializeField]
@@ -324,10 +326,21 @@ public class Enemy : MonoBehaviour
                 return;
             }
 
+            if (_isSpecialEnemy) // Special enemy getting hit
+            {
+                GameObject explosion = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
+                explosion.transform.parent = transform;
+                gameObject.GetComponent<SpriteRenderer>().enabled = false;
+            }
+
             _isEnemyAlive = false;
             _boxCollider2D.enabled = false;
 
-            _anim.SetTrigger("OnEnemyDeath");
+            if (!_isSpecialEnemy)
+            {
+                _anim.SetTrigger("OnEnemyDeath");
+            }
+            
             _audioSource.Play();
 
             _spawnManager.RemoveEnemy();
@@ -376,7 +389,6 @@ public class Enemy : MonoBehaviour
         if (_isEnemyEvasive)
         {
             _isEvading = true;
-            Debug.Log("Started evading");
             _evadeDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
             StartCoroutine(EvadingCountdown());
         }
@@ -394,7 +406,6 @@ public class Enemy : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
         _isEvading = false;
-        Debug.Log("Stopped alternative evading");
     }
 
     public bool IsEnemyAlive()

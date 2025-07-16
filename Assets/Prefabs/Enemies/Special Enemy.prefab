@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 1458460782181400761}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3031895339327124383}
@@ -57,6 +57,7 @@ MonoBehaviour:
   _enemyLaserPrefab: {fileID: 236600167783763141, guid: 878af0e199ce99641a958ad2ab31e2be, type: 3}
   _laserSpawnPoint: {fileID: 9199095664231652274}
   _enemyShieldVisual: {fileID: 5031176142651425690}
+  _explosionPrefab: {fileID: 6828167405626851732, guid: 09f6e045518af4b47bf6a9aba9801bf6, type: 3}
   _isEnemyEvasive: 0
   _isEnemyAggressive: 0
   _isEnemySmart: 0
@@ -70,7 +71,6 @@ MonoBehaviour:
   _bossFireRate: 3
   _bossScore: 100
   _bossLaserPrefab: {fileID: 236600167783763141, guid: a2310fbe74e74d049934099e4b56ec6f, type: 3}
-  _bossLaserOffset: {x: 0, y: -1.6, z: 0}
   _bossLaserSpawnPoint: {fileID: 0}
 --- !u!212 &5054541628197615280
 SpriteRenderer:
@@ -113,8 +113,8 @@ SpriteRenderer:
   m_SortingLayerID: -1019798291
   m_SortingLayer: 2
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 3154912113cbb4a498df6f571c74e18c, type: 3}
-  m_Color: {r: 1, g: 0.37169808, b: 0.37169808, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 8d6dfa5aad2c6c64c832efa8b1387198, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -395,7 +395,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5117442796663165334}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.98, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
