@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Unity.VisualScripting;
 
 public class UIManager : MonoBehaviour
 {
@@ -11,16 +10,13 @@ public class UIManager : MonoBehaviour
 
     [SerializeField]
     private Image _livesImage;
-
     [SerializeField]
     private Sprite[] _liveSprites;
 
     [SerializeField]
     private TMP_Text _gameOverText;
-
     [SerializeField]
     private TMP_Text _gameFinishedText;
-
     [SerializeField]
     private TMP_Text _restartText;
 
@@ -39,6 +35,7 @@ public class UIManager : MonoBehaviour
     private float _speedBoostDuration;
     private float _countdownStart;
     private float _countdownLeft;
+
     [SerializeField]
     private TMP_Text _waveFinishedText;
     [SerializeField]
@@ -51,10 +48,11 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private TMP_Text _thrustersCooldownCounterText;
 
+    [SerializeField]
+    private TMP_Text _bossFightText;
 
     private GameManager _gameManager;
     private SpawnManager _spawnManager;
-
 
     // Start is called before the first frame update
     void Start()
@@ -140,7 +138,6 @@ public class UIManager : MonoBehaviour
         _gameFinishedText.text = "Congratulations \nYou WON. Your score is " + playerScore;
         _restartText.gameObject.SetActive(true);
         _gameManager.GameFinished();
-
     }
 
     // Shield Strength UI updating
@@ -161,9 +158,7 @@ public class UIManager : MonoBehaviour
             if (shieldAnimator != null)
             {
                 shieldAnimator.SetTrigger("TextPopup");
-            }
-
-            
+            }            
         }
         else
         {
@@ -214,7 +209,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-
     public void WaveFinished()
     {
         StartCoroutine(WaveFinishedSequence());
@@ -240,7 +234,6 @@ public class UIManager : MonoBehaviour
         _spawnManager.StartNewWave();
     }
 
-
     public void DisplayThrustersCharge(float chargeValue)
     {
         _thrustersIndicatorImage.fillAmount = chargeValue;
@@ -263,13 +256,23 @@ public class UIManager : MonoBehaviour
         {
             _thrustersImage.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
             _thrustersImage.GetComponent<SpriteRenderer>().color = new Color(1f, 0.73f, 0.73f, 1f);
-            //_thrustersIndicatorImage.gameObject.SetActive(true);
         }
         else
         {
             _thrustersImage.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
             _thrustersImage.GetComponent<SpriteRenderer>().color = Color.white;
         }
-        
+    }
+
+    public void BossFightWarning()
+    {
+        _bossFightText.gameObject.SetActive(true);
+        StartCoroutine(BossFightWarningCountdown());
+    }
+
+    IEnumerator BossFightWarningCountdown()
+    {
+        yield return new WaitForSeconds(3f);
+        _bossFightText.gameObject.SetActive(false);
     }
 }

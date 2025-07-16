@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Powerup : MonoBehaviour
@@ -9,7 +7,6 @@ public class Powerup : MonoBehaviour
     private float _powerUpSpeed = 3f;
     [SerializeField]
     private float _magnetPower = 12f;
-
 
     private bool _movingTowardsPlayer = false;
     private GameObject _playerObject;
@@ -83,12 +80,15 @@ public class Powerup : MonoBehaviour
                         player.HealPlayer();
                         break;
                     case 5:
-                        player.SpecialWeaponActive();
+                        //Debug.Log("Collected Shotgun");
+                        player.ShotgunActive();
                         break;
                     case 6:
+                        //Debug.Log("Collected Homing Missile");
                         player.HomingMissileActive();
                         break;
                     case 7:
+                        //Debug.Log("Collected Negative pickup");
                         player.Damage();
                         break;
                     default:
@@ -100,15 +100,14 @@ public class Powerup : MonoBehaviour
         }
     }
 
-    public void MoveToPlayer()
-    {
-        var step = _magnetPower * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, _playerObject.transform.position, step);
-    }
-
     public void StartMovingTowardsPlayer()
     {
         _movingTowardsPlayer = true;
     }
 
+    public void MoveToPlayer()
+    {
+        var step = _magnetPower * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, _playerObject.transform.position, step);
+    }
 }

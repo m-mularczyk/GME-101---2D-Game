@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyRadar : MonoBehaviour
@@ -26,7 +24,7 @@ public class EnemyRadar : MonoBehaviour
             {
                 if (laser.GetIsEnemyLaser() == false)
                 {
-                    _enemy.LaserDetected();
+                    _enemy.StartEvasion();
                 }
             }
         }

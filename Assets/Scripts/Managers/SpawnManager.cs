@@ -78,8 +78,6 @@ public class SpawnManager : MonoBehaviour
     private Coroutine _enemySpawnRoutine;
     private Coroutine _powerupSpawnRoutine;
 
-    
-
     private void Start()
     {
         if (_uiManager == null)
@@ -97,10 +95,7 @@ public class SpawnManager : MonoBehaviour
         {
             Debug.LogError("Player is NULL");
         }
-
     }
-
-
 
     public void StartSpawning()
     {
@@ -139,13 +134,10 @@ public class SpawnManager : MonoBehaviour
             else
             // Regular enemy spawning
             {
-
                 GameObject newEnemy = Instantiate(_enemyPrefab, new Vector3(randomX, 10, 0), Quaternion.identity);
                 newEnemy.GetComponent<Enemy>().SetEnemyConfiguration(ConfigureEnemySetup(_isEvasiveProbability), ConfigureEnemySetup(_isAggressiveProbability), ConfigureEnemySetup(_isSmartProbability), ConfigureEnemySetup(_hasShieldProbability), ConfigureEnemySetup(_horizontalMogementProbability));
                 newEnemy.transform.SetParent(_enemyContainer.transform);
             }
-            
-            
             
             AddEnemy();
             yield return new WaitForSeconds(5f);
@@ -174,11 +166,9 @@ public class SpawnManager : MonoBehaviour
                 GameObject newPowerup = Instantiate(_rarePowerups[randomPowerupID], new Vector3(randomX, 10, 0), Quaternion.identity);
                 newPowerup.transform.SetParent(_powerupContainer.transform);
                 //Debug.Log("Rare powerup spawned");
-                
             }
             else
             {   
-                //test for frequent powerup
                 if (Random.Range(0f, 1f) < _frequentSpawnProbability && _frequentPowerups.Length > 0)
                 {
                     int randomPowerupID = Random.Range(0, _frequentPowerups.Length);
@@ -245,12 +235,10 @@ public class SpawnManager : MonoBehaviour
                 _isSpawningEnemies = false;
                 _uiManager.WaveFinished();
             }
-            
         }
     }
 
     // Wave methods
-
     public void StartNewWave()
     {
         _enemiesPerLevel = (int)Mathf.Ceil(_enemiesPerLevel * _enemiesMultiplier);
@@ -268,8 +256,7 @@ public class SpawnManager : MonoBehaviour
     }
 
     // Behaviour setup for each instantiated enemy
-
-    private bool ConfigureEnemySetup(float probability)
+        private bool ConfigureEnemySetup(float probability)
     {
         float randomNum = Random.Range(0f, 1f);
         return (randomNum <= probability) ? true : false;
@@ -277,7 +264,8 @@ public class SpawnManager : MonoBehaviour
 
     private void SpawnBoss()
     {
-        Debug.Log("Spawning boss!");
+        //Debug.Log("Spawning boss!");
+        _uiManager.BossFightWarning();
         Instantiate(_enemyBossPrefab, new Vector3(0f, 10f, 0f), Quaternion.identity);
     }
 
@@ -285,6 +273,4 @@ public class SpawnManager : MonoBehaviour
     {
         _isSpawningPowerups = powerupsSpawning;
     }
-
-
 }

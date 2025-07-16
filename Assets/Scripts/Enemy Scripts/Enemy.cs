@@ -1,8 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
@@ -44,14 +41,7 @@ public class Enemy : MonoBehaviour
     private UIManager _uiManager;
 
     private bool _isEnemyAlive = true;
-
     private bool _isRammingCountdownRunning = false;
-    private bool _isEvadingCountdownRunning = false;
-
-    //[SerializeField]
-    //private Vector3 _laserOffset = Vector3.down;
-    
-
     private bool _isEvading = false;
     private bool _isRamming = false;
 
@@ -72,14 +62,11 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private GameObject _bossLaserPrefab;
     [SerializeField]
-    private Vector3 _bossLaserOffset = Vector3.down;
-    [SerializeField]
     private Transform _bossLaserSpawnPoint;
 
     private Vector3 _bossDirection = Vector3.down;
     private bool _bossReachedDestination = false;
 
-    private bool _hasEvadeStarted = false;
     private Vector3 _evadeDirection = Vector3.left;
 
     // Start is called before the first frame update
@@ -136,19 +123,15 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         CalculateMovement();
-
-        if (_isEnemyEvasive)
-        {
-            EvadeLaser();
-        }
+        EvadingMovement();
 
         if (Time.time > _canFire && _isEnemyAlive)
         {
-            EnemyFiring();
+            EnemyFireProcedure();
         }
     }
 
-    private void EnemyFiring()
+    private void EnemyFireProcedure()
     {
         if (!_isBoss)
         {
@@ -177,6 +160,7 @@ public class Enemy : MonoBehaviour
                 }
                 else
                 {
+                    // Boss shooting
                     if (_bossReachedDestination)
                     {
                         BossShot();
@@ -184,7 +168,6 @@ public class Enemy : MonoBehaviour
                 }
             }
         }
-        
     }
 
     private void EnemyShot()
@@ -192,6 +175,11 @@ public class Enemy : MonoBehaviour
         GameObject enemyLaser = Instantiate(_enemyLaserPrefab, _laserSpawnPoint.position, transform.rotation);
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
+        ConfigureEnemyLasers(lasers);
+    }
+
+    private static void ConfigureEnemyLasers(Laser[] lasers)
+    {
         for (int i = 0; i < lasers.Length; i++)
         {
             lasers[i].AssignEnemyLaser();
@@ -207,10 +195,7 @@ public class Enemy : MonoBehaviour
         GameObject enemyLaser = Instantiate(_bossLaserPrefab, _bossLaserSpawnPoint.position, transform.rotation);
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
-        for (int i = 0; i < lasers.Length; i++)
-        {
-            lasers[i].AssignEnemyLaser();
-        }
+        ConfigureEnemyLasers(lasers);
     }
 
     private void EnemyShotBackwards()
@@ -218,17 +203,14 @@ public class Enemy : MonoBehaviour
         GameObject enemyLaser = Instantiate(_enemyLaserPrefab, _laserSpawnPoint.position, Quaternion.Euler(new Vector3(0, 0, 180)));
         Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
 
-        for (int i = 0; i < lasers.Length; i++)
-        {
-            lasers[i].AssignEnemyLaser();
-        }
+        ConfigureEnemyLasers(lasers);
     }
 
     private void CalculateMovement()
     {
         if (!_isBoss) // Movement of a regular enemy
         {
-            if (_isRamming && _isEnemyAggressive) // Movement when ramming player
+            if (_isRamming && _isEnemyAggressive) // Regular enemy movement when ramming player
             {
                 transform.Translate(Vector3.down * _enemySpeed * _rammingSpeedMultiplier * Time.deltaTime);
 
@@ -238,12 +220,12 @@ public class Enemy : MonoBehaviour
                     _isRammingCountdownRunning = true;
                 }
             }
-            else // Basic movement
+            else // Regular enemy basic movement
             {
                 transform.Translate(Vector3.down * _enemySpeed * Time.deltaTime, Space.Self);
             }
 
-            if (_horizontalMovement)
+            if (_horizontalMovement) // Horizontal movement
             {
                 transform.Translate(_horizontalDirection * (_enemySpeed / 2) * Time.deltaTime);
 
@@ -280,7 +262,7 @@ public class Enemy : MonoBehaviour
                 _bossSpeed = 0f;
                 _bossReachedDestination = true;
 
-                // Rotate boss towards player
+                // Rotating boss towards player
                 if (_player != null)
                 {
                     Vector2 direction = _player.transform.position - transform.position;
@@ -288,7 +270,6 @@ public class Enemy : MonoBehaviour
                 }
             }
         }
-        
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -298,8 +279,8 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if (other.CompareTag("Laser")){
-
+        if (other.CompareTag("Laser")) // Collision with player laser only
+        {
             Laser laser = other.GetComponent<Laser>();
             if (laser != null) 
             {
@@ -307,17 +288,16 @@ public class Enemy : MonoBehaviour
                 {
                     Destroy(other.gameObject);
 
-                    if (!_isBoss && !_isEnemyShielded)
+                    if (!_isBoss && !_isEnemyShielded) // Add score for destroying regular enemy with the player laser
                     {
                         _player.AddScore(10);
                     }
 
                     OnEnemyHit();
-                    
                 }
             }
 
-        } else if (other.CompareTag("Player"))
+        } else if (other.CompareTag("Player")) // Collision with Player
         {
             Player player = other.GetComponent<Player>();
             if (player != null) {
@@ -326,24 +306,22 @@ public class Enemy : MonoBehaviour
 
             OnEnemyHit();
         }
-
     }
 
     public void OnEnemyHit()
     {
-        if (!_isBoss)
+        if (!_isBoss) // Regular enemy getting hit
         {
             if (!_isEnemyAlive)
             {
                 return;
             }
 
-            if (_isEnemyShielded)
+            if (_isEnemyShielded) // Shielded enemy getting hit
             {
                 _isEnemyShielded = false;
                 _enemyShieldVisual.SetActive(false);
                 return;
-                
             }
 
             _isEnemyAlive = false;
@@ -353,14 +331,16 @@ public class Enemy : MonoBehaviour
             _audioSource.Play();
 
             _spawnManager.RemoveEnemy();
-
             Destroy(this.gameObject, 2.8f);
         }
         else
         {
-            if (_bossLives > 1)
+            if (_bossLives > 1) // Boss getting hit
             {
-                _bossLives--;
+                if (_bossReachedDestination)
+                {
+                    _bossLives--;
+                }
             }
             else // Boss is dead
             {
@@ -389,42 +369,32 @@ public class Enemy : MonoBehaviour
         _horizontalMovement = horizontalMovement;
     }
 
-
-    // Laser evasive movement
-    public void LaserDetected()
+    // Evasive procedure
+    // Alternative evading system
+    public void StartEvasion()
     {
-        _isEvading = true;
-
-        if (!_isEvadingCountdownRunning)
+        if (_isEnemyEvasive)
         {
+            _isEvading = true;
+            Debug.Log("Started evading");
+            _evadeDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
             StartCoroutine(EvadingCountdown());
-            _isEvadingCountdownRunning = true;
         }
     }
 
-    public void EvadeLaser()
+    public void EvadingMovement()
     {
-        if(!_hasEvadeStarted)
-        {
-            _hasEvadeStarted = true;
-            _evadeDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
-        }
-
         if (_isEvading && _isEnemyAlive)
         {
-            {
-                transform.Translate(_evadeDirection * 7 * Time.deltaTime);
-            }
+            transform.Translate(_evadeDirection * 7 * Time.deltaTime);
         }
     }
 
     IEnumerator EvadingCountdown()
     {
-        //Debug.Log("Enemy is evading shot");
         yield return new WaitForSeconds(0.2f);
         _isEvading = false;
-        _isEvadingCountdownRunning = false;
-        _hasEvadeStarted = false;
+        Debug.Log("Stopped alternative evading");
     }
 
     public bool IsEnemyAlive()
@@ -449,7 +419,7 @@ public class Enemy : MonoBehaviour
     {
         if (!_isBoss)
         {
-            //Debug.Log("Enemy attacking a powerup!");
+            //Debug.Log("Enemy is attacking a powerup!");
             EnemyShot();
         } 
     }

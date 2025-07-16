@@ -13,12 +13,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Restart game then Game Over and pressing R
         if (Input.GetKeyDown(KeyCode.R) && _isGameOver)
         {
             _isGameOver = false;
             StartGame();
         }
 
+        // Exit game
         if (Input.GetKeyDown(KeyCode.Escape))
         {
 #if UNITY_EDITOR
@@ -38,7 +40,6 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene("Game");
     }
-
     public void GameOver()
     {
         _isGameOver = true;

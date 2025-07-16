@@ -1,20 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Laser : MonoBehaviour
 {
     [SerializeField]
     private float _laserSpeed = 8f;
-
     [SerializeField]
     private bool _isEnemyLaser = false;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
@@ -26,8 +17,7 @@ public class Laser : MonoBehaviour
         } else
         {
             MoveDown();
-        }
-            
+        }    
     }
 
     void MoveUp()

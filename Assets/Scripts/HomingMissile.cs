@@ -25,8 +25,10 @@ public class HomingMissile : MonoBehaviour
             Debug.LogError("Player is NULL");
         }
 
+        // Get all enemies in the scene
         _enemies = GameObject.FindObjectsOfType<Enemy>();
 
+        // Get all ALIVE enemies from these present in the scene
         List<Enemy> aliveEnemies = new List<Enemy>();
         foreach (Enemy enemy in _enemies)
         {
@@ -36,6 +38,7 @@ public class HomingMissile : MonoBehaviour
             }
         }
 
+        // Search for the one that is closest to Player
         if (aliveEnemies.Count > 0)
         {
             _closestEnemy = aliveEnemies[0];
@@ -50,7 +53,6 @@ public class HomingMissile : MonoBehaviour
         }
 
         StartCoroutine(HomingMissileDisposal(_missileLifespan));
-
     }
 
     // Update is called once per frame

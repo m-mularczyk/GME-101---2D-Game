@@ -42,7 +42,6 @@ public class Player : MonoBehaviour
     [SerializeField]
     private AudioClip _laserSound;
 
-
     [Header("TripleShot settings")]
     [SerializeField]
     private GameObject _tripleShotPrefab;
@@ -99,7 +98,6 @@ public class Player : MonoBehaviour
     private GameObject _rightFire;
 
     private AudioSource _audioSource;
-
     private SpawnManager _spawnManager;
     private GameObject _mainCamera;
     
@@ -146,7 +144,6 @@ public class Player : MonoBehaviour
         _currentAmmo = _maxAmmo;
         _uiManager.UpdateAmmoCount(_currentAmmo);
 
-
         _thrustersLeft = _thrustersDuration;
     }
 
@@ -171,7 +168,6 @@ public class Player : MonoBehaviour
                     powerup.StartMovingTowardsPlayer();
                 }
             }
-            //Debug.Log("Powerup magnets enabled");
         }
     }
 
@@ -195,7 +191,6 @@ public class Player : MonoBehaviour
             {
             transform.Translate(direction * _speed * Time.deltaTime);
             }
-            
         }
 
         if (transform.position.x > _horizontalBound)
@@ -208,7 +203,6 @@ public class Player : MonoBehaviour
         }
         
         transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, -4f, 2f), 0);
-        
     }
 
     void ThrustersProcedure()
@@ -407,7 +401,6 @@ public class Player : MonoBehaviour
             _uiManager.UpdateAmmoCount(_currentAmmo);
             _uiManager.PopupAmmoText();
         }
-        
     }
 
     public void HealPlayer()
@@ -430,7 +423,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void SpecialWeaponActive()
+    public void ShotgunActive()
     {
         _isShotgunActive = true;
         StartCoroutine(ShotgunCountdown());
